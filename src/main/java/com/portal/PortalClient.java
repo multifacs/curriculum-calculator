@@ -1,0 +1,785 @@
+package com.portal;
+
+import com.portal.model.*;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import org.controlsfx.control.CheckComboBox;
+import org.controlsfx.control.IndexedCheckModel;
+import org.kordamp.bootstrapfx.BootstrapFX;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.*;
+
+public class PortalClient extends Application {
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(PortalClient.class.getResource("client-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+        scene.getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
+        stage.setTitle("Портал");
+        stage.setScene(scene);
+        stage.show();
+
+        DBConnection dbConnection = new DBConnection();
+        Label loadingLabel = (Label) scene.lookup("#loadingText");
+        ProgressIndicator progressIndicator = (ProgressIndicator) scene.lookup("#progressIndicator");
+        StatusObserver statusObserver = new StatusObserver(dbConnection, loadingLabel, progressIndicator);
+        dbConnection.connect();
+
+        Label loginLabel = (Label) scene.lookup("#loginLabel");
+        TextField usernameField = (TextField) scene.lookup("#usernameField");
+        PasswordField passwordField = (PasswordField) scene.lookup("#passwordField");
+        Button loginBtn = (Button) scene.lookup("#loginBtn");
+
+        Label userLabel = (Label) scene.lookup("#userLabel");
+        Button logoutBtn = (Button) scene.lookup("#logoutBtn");
+
+
+        initializeLoadingTab(scene, stage, dbConnection);
+
+        disableTabs(scene, true);
+
+        setGroupsListeners(scene, dbConnection);
+        setProfessorsListeners(scene, dbConnection);
+        setSubjectsListeners(scene, dbConnection);
+        setCurriculaListeners(scene, dbConnection);
+
+        loginBtn.setOnAction(e -> {
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+
+            Platform.runLater(() -> {
+                if (dbConnection.login(username, password)) {
+                    loginLabel.setText("Успешно");
+
+                    userLabel.setText(username);
+                    loginBtn.setDisable(true);
+                    logoutBtn.setDisable(false);
+                    usernameField.setDisable(true);
+                    passwordField.setDisable(true);
+
+                    disableTabs(scene, false);
+                    initializeGroups(scene, dbConnection);
+                    initializeProfessors(scene, dbConnection);
+                    initializeSubjects(scene, dbConnection);
+                    initializeCurricula(scene, dbConnection);
+                } else {
+                    loginLabel.setText("Ошибка");
+
+                    userLabel.setText("none");
+                    loginBtn.setDisable(false);
+                    logoutBtn.setDisable(true);
+                    usernameField.setDisable(false);
+                    passwordField.setDisable(false);
+
+                    disableTabs(scene, true);
+                }
+            });
+        });
+        logoutBtn.setOnAction(e -> {
+            dbConnection.logout();
+            userLabel.setText("none");
+            loginBtn.setDisable(false);
+            logoutBtn.setDisable(true);
+            usernameField.setDisable(false);
+            passwordField.setDisable(false);
+
+            disableTabs(scene, true);
+        });
+        boolean autoLogin = true;
+        if (autoLogin) {
+            Platform.runLater(() -> {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                dbConnection.login("test_user", "123");
+                loginLabel.setText("Успешно");
+
+                userLabel.setText("test_user");
+                loginBtn.setDisable(true);
+                logoutBtn.setDisable(false);
+
+                disableTabs(scene, false);
+                initializeGroups(scene, dbConnection);
+                initializeProfessors(scene, dbConnection);
+                initializeSubjects(scene, dbConnection);
+                initializeCurricula(scene, dbConnection);
+            });
+        }
+    }
+    private void disableTabs(Scene scene, boolean value) {
+        Node tabProfessors = scene.lookup("#tabProfessors");
+        tabProfessors.setDisable(value);
+
+        Node tabSubjects = scene.lookup("#tabSubjects");
+        tabSubjects.setDisable(value);
+
+        Node tabGroups = scene.lookup("#tabGroups");
+        tabGroups.setDisable(value);
+
+        Node tabCurrs = scene.lookup("#tabCurriculums");
+        tabCurrs.setDisable(value);
+
+        Node tabLoad = scene.lookup("#tabLoad");
+        tabLoad.setDisable(value);
+
+        Node tabDistribution = scene.lookup("#tabDistribution");
+        tabDistribution.setDisable(value);
+    }
+
+    private void setGroupsListeners(Scene scene, DBConnection dbConnection) {
+        TableView groupsTable = (TableView) scene.lookup("#groupsTable");
+
+        RadioButton groupsAddRadio = (RadioButton) scene.lookup("#groupsAddRadio");
+        RadioButton groupsEditRadio = (RadioButton) scene.lookup("#groupsEditRadio");
+        RadioButton groupsDeleteRadio = (RadioButton) scene.lookup("#groupsDeleteRadio");
+        TextField groupIdField = (TextField) scene.lookup("#groupIdField");
+        TextField numOfGroupField = (TextField) scene.lookup("#numOfGroupField");
+        TextField numOfStudentsField = (TextField) scene.lookup("#numOfStudentsField");
+        TextField dirField = (TextField) scene.lookup("#dirField");
+        TextField groupPhoneField = (TextField) scene.lookup("#groupPhoneField");
+
+        groupsTable.setOnMouseClicked(e -> {
+            Group group = (Group) groupsTable.getFocusModel().getFocusedItem();
+
+            Platform.runLater(() -> {
+                if (!groupsAddRadio.isSelected()) {
+                    groupIdField.setText(String.valueOf(group.getGroupId()));
+                    numOfGroupField.setText(String.valueOf(group.getGroupNum()));
+                    numOfStudentsField.setText(String.valueOf(group.getStudentsNum()));
+                    dirField.setText(String.valueOf(group.getDirection()));
+                    groupPhoneField.setText(String.valueOf(group.getPhoneNum()));
+                }
+            });
+        });
+
+        Button groupActionBtn = (Button) scene.lookup("#groupActionBtn");
+        groupActionBtn.setOnAction(e -> {
+            int id = 0;
+            int groupNum = 0;
+            int studentsNum = 0;
+            String direction = null;
+            String phoneNum = null;
+
+            if (groupsAddRadio.isSelected() || groupsEditRadio.isSelected()) {
+                try {
+                    groupNum = Integer.parseInt(numOfGroupField.getText());
+                    if (numOfStudentsField.getText().length() != 0) {
+                        studentsNum = Integer.parseInt(numOfStudentsField.getText());
+                    }
+                    direction = dirField.getText();
+                    phoneNum = groupPhoneField.getText();
+                    assert direction.length() > 0;
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+            if (groupsEditRadio.isSelected() || groupsDeleteRadio.isSelected()) {
+                try {
+                    id = Integer.parseInt(groupIdField.getText());
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+
+            if (groupsAddRadio.isSelected()) {
+                try {
+                    dbConnection.addGroup(new Group(0, groupNum, studentsNum, direction, phoneNum));
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            } else if (groupsEditRadio.isSelected()) {
+                try {
+                    dbConnection.updateGroup(new Group(id, groupNum, studentsNum, direction, phoneNum));
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            } else {
+                try {
+                    dbConnection.deleteGroup(id);
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            }
+            updateGroups(scene, dbConnection);
+        });
+
+        Button groupsUpdateBtn = (Button) scene.lookup("#groupsUpdateBtn");
+        groupsUpdateBtn.setOnAction(e -> {
+            updateGroups(scene, dbConnection);
+        });
+    }
+    public void initializeGroups(Scene scene, DBConnection dbConnection) {
+        TableView groupsTable = (TableView) scene.lookup("#groupsTable");
+
+        TableColumn<Group, String> column1 =
+                new TableColumn<>("ID");
+        column1.setCellValueFactory(
+                new PropertyValueFactory<>("groupId"));
+
+        TableColumn<Group, String> column2 =
+                new TableColumn<>("№ группы");
+        column2.setCellValueFactory(
+                new PropertyValueFactory<>("groupNum"));
+
+        TableColumn<Group, String> column3 =
+                new TableColumn<>("Число студентов");
+        column3.setCellValueFactory(
+                new PropertyValueFactory<>("studentsNum"));
+
+        TableColumn<Group, String> column4 =
+                new TableColumn<>("Направление");
+        column4.setCellValueFactory(
+                new PropertyValueFactory<>("direction"));
+
+        TableColumn<Group, String> column5 =
+                new TableColumn<>("Тел. номер");
+        column5.setCellValueFactory(
+                new PropertyValueFactory<>("phoneNum"));
+
+        groupsTable.getColumns().clear();
+        groupsTable.getColumns().addAll(column1, column2, column3, column4, column5);
+
+        updateGroups(scene, dbConnection);
+    }
+    private void updateGroups(Scene scene, DBConnection dbConnection) {
+        TableView groupsTable = (TableView) scene.lookup("#groupsTable");
+
+        List<Group> groupList = dbConnection.getGroups();
+        groupsTable.getItems().clear();
+        groupsTable.getItems().addAll(groupList);
+
+        Label numOfGroupsLabel = (Label) scene.lookup("#numOfGroupsLabel");
+        numOfGroupsLabel.setText(String.valueOf(groupList.size()));
+    }
+
+
+    private void setProfessorsListeners(Scene scene, DBConnection dbConnection) {
+        TableView professorsTable = (TableView) scene.lookup("#professorsTable");
+
+        RadioButton professorsAddRadio = (RadioButton) scene.lookup("#professorsAddRadio");
+        RadioButton professorsEditRadio = (RadioButton) scene.lookup("#professorsEditRadio");
+        RadioButton professorsDeleteRadio = (RadioButton) scene.lookup("#professorsDeleteRadio");
+
+        TextField professorIdField = (TextField) scene.lookup("#professorIdField");
+        TextField professorNameField = (TextField) scene.lookup("#professorNameField");
+        TextField professorPhoneNumField = (TextField) scene.lookup("#professorPhoneNumField");
+        DatePicker professorBirthdateField = (DatePicker) scene.lookup("#professorBirthdateField");
+        TextField professorAddressField = (TextField) scene.lookup("#professorAddressField");
+        TextField professorEmailField = (TextField) scene.lookup("#professorEmailField");
+        CheckComboBox professorSubjectsCombo = (CheckComboBox) scene.lookup("#professorSubjectsCombo");
+
+        professorsTable.setOnMouseClicked(e -> {
+            Professor professor = (Professor) professorsTable.getFocusModel().getFocusedItem();
+
+            Platform.runLater(() -> {
+                if (!professorsAddRadio.isSelected()) {
+                    professorIdField.setText(String.valueOf(professor.getProfessorId()));
+                    professorNameField.setText(String.valueOf(professor.getFullName()));
+                    professorPhoneNumField.setText(String.valueOf(professor.getPhoneNum()));
+                    professorBirthdateField.setValue(professor.getBirthDate());
+                    professorAddressField.setText(String.valueOf(professor.getAddress()));
+                    professorEmailField.setText(String.valueOf(professor.getEmail()));
+                    IndexedCheckModel<Integer> checkModel = professorSubjectsCombo.getCheckModel();
+                    professor.getSubjects().forEach(s -> {
+                        int index = checkModel.getItemIndex(s);
+                        checkModel.check(index);
+                    });
+//                    checkModel.getCheckedIndices().addAll(professor.getSubjects());
+                    professorSubjectsCombo.setCheckModel(checkModel);
+                }
+            });
+        });
+
+        Button professorsActionBtn = (Button) scene.lookup("#professorsActionBtn");
+        professorsActionBtn.setOnAction(e -> {
+            int id = 0;
+            String fullName = null;
+            String phoneNum = null;
+            LocalDate birthdate = null;
+            String address = null;
+            String email = null;
+            List<Integer> subjects = new ArrayList<>();
+
+            if (professorsAddRadio.isSelected() || professorsEditRadio.isSelected()) {
+                try {
+                    fullName = professorNameField.getText();
+                    System.out.println("fullName = " + fullName.length());
+                    assert fullName.length() > 0;
+                    phoneNum = professorPhoneNumField.getText();
+                    assert phoneNum.length() > 0;
+                    birthdate = professorBirthdateField.getValue();
+                    address = professorAddressField.getText();
+                    email = professorEmailField.getText();
+                    for (var i : professorSubjectsCombo.getCheckModel().getCheckedItems()) {
+                        subjects.add((Integer) i);
+                    }
+                    System.out.println("subjects = " + subjects);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+            if (professorsEditRadio.isSelected() || professorsDeleteRadio.isSelected()) {
+                try {
+                    id = Integer.parseInt(professorIdField.getText());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+
+            if (professorsAddRadio.isSelected()) {
+                try {
+                    dbConnection.addProfessor(new Professor(0, fullName, phoneNum, birthdate, address, email, subjects));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                }
+            } else if (professorsEditRadio.isSelected()) {
+                try {
+                    dbConnection.updateProfessor(new Professor(id, fullName, phoneNum, birthdate, address, email, subjects));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                }
+            } else {
+                try {
+                    dbConnection.deleteProfessor(id);
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            }
+            updateProfessors(scene, dbConnection);
+        });
+
+        Button professorsUpdateBtn = (Button) scene.lookup("#professorsUpdateBtn");
+        professorsUpdateBtn.setOnAction(e -> {
+            updateProfessors(scene, dbConnection);
+        });
+    }
+    public void initializeProfessors(Scene scene, DBConnection dbConnection) {
+        TableView professorsTable = (TableView) scene.lookup("#professorsTable");
+
+        TableColumn<Professor, String> column1 =
+                new TableColumn<>("ID");
+        column1.setCellValueFactory(
+                new PropertyValueFactory<>("professorId"));
+
+        TableColumn<Professor, String> column2 =
+                new TableColumn<>("ФИО");
+        column2.setCellValueFactory(
+                new PropertyValueFactory<>("fullName"));
+
+        TableColumn<Professor, String> column3 =
+                new TableColumn<>("Тел. номер");
+        column3.setCellValueFactory(
+                new PropertyValueFactory<>("phoneNum"));
+
+        TableColumn<Professor, String> column4 =
+                new TableColumn<>("Дата рождения");
+        column4.setCellValueFactory(
+                new PropertyValueFactory<>("birthDate"));
+
+        TableColumn<Professor, String> column5 =
+                new TableColumn<>("Адрес");
+        column5.setCellValueFactory(
+                new PropertyValueFactory<>("address"));
+
+        TableColumn<Professor, String> column6 =
+                new TableColumn<>("Email");
+        column6.setCellValueFactory(
+                new PropertyValueFactory<>("email"));
+
+        TableColumn<Professor, String> column7 =
+                new TableColumn<>("Предметы");
+        column7.setCellValueFactory(
+                new PropertyValueFactory<>("subjects"));
+
+        professorsTable.getColumns().clear();
+        professorsTable.getColumns().addAll(column1, column2, column3, column4, column5, column6, column7);
+
+        updateProfessors(scene, dbConnection);
+
+        AnchorPane anchorPane = (AnchorPane) scene.lookup("#professorsAnchorPane");
+        anchorPane.prefWidthProperty().bind(scene.widthProperty());
+        VBox vBox = (VBox) scene.lookup("#professorsVBox");
+        vBox.prefWidthProperty().bind(scene.widthProperty());
+    }
+    private void updateProfessors(Scene scene, DBConnection dbConnection) {
+        TableView professorsTable = (TableView) scene.lookup("#professorsTable");
+
+        List<Professor> professorList = dbConnection.getProfessors();
+        professorsTable.getItems().clear();
+        professorsTable.getItems().addAll(professorList);
+
+        CheckComboBox professorSubjectsCombo = (CheckComboBox) scene.lookup("#professorSubjectsCombo");
+        List<Subject> subjectList = dbConnection.getSubjects();
+        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
+        professorSubjectsCombo.getItems().clear();
+        professorSubjectsCombo.getItems().addAll(subjectIDs);
+
+        Label numOfProfessorsLabel = (Label) scene.lookup("#numOfProfessorsLabel");
+        numOfProfessorsLabel.setText(String.valueOf(professorList.size()));
+    }
+
+
+    private void setSubjectsListeners(Scene scene, DBConnection dbConnection) {
+        TableView subjectsTable = (TableView) scene.lookup("#subjectsTable");
+
+        RadioButton subjectsAddRadio = (RadioButton) scene.lookup("#subjectsAddRadio");
+        RadioButton subjectsEditRadio = (RadioButton) scene.lookup("#subjectsEditRadio");
+        RadioButton subjectsDeleteRadio = (RadioButton) scene.lookup("#subjectsDeleteRadio");
+
+        TextField subjectIdField = (TextField) scene.lookup("#subjectIdField");
+        TextField subjectNameField = (TextField) scene.lookup("#subjectNameField");
+        ChoiceBox<Integer> subjectProfessorIdField = (ChoiceBox<Integer>) scene.lookup("#subjectProfessorIdField");
+        TextField descField = (TextField) scene.lookup("#descField");
+
+        subjectsTable.setOnMouseClicked(e -> {
+            Subject subject = (Subject) subjectsTable.getFocusModel().getFocusedItem();
+
+            Platform.runLater(() -> {
+                if (!subjectsAddRadio.isSelected()) {
+                    subjectIdField.setText(String.valueOf(subject.getSubjectId()));
+                    subjectNameField.setText(String.valueOf(subject.getSubjectName()));
+                    descField.setText(String.valueOf(subject.getDescription()));
+                    subjectProfessorIdField.setValue(subject.getProfessorId());
+                }
+            });
+        });
+
+        Button subjectsActionBtn = (Button) scene.lookup("#subjectsActionBtn");
+        subjectsActionBtn.setOnAction(e -> {
+            int id = 0;
+            String name = null;
+            String description = "";
+            int professorId = -1;
+
+            if (subjectsAddRadio.isSelected() || subjectsEditRadio.isSelected()) {
+                try {
+                    name = subjectNameField.getText();
+                    assert name.length() > 0;
+                    description = descField.getText();
+                    professorId = subjectProfessorIdField.getValue();
+                    System.out.println("professorId = " + professorId);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+            if (subjectsEditRadio.isSelected() || subjectsDeleteRadio.isSelected()) {
+                try {
+                    id = Integer.parseInt(subjectIdField.getText());
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+
+            if (subjectsAddRadio.isSelected()) {
+                try {
+                    dbConnection.addSubject(new Subject(0, name, description, professorId));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                }
+            } else if (subjectsEditRadio.isSelected()) {
+                try {
+                    dbConnection.updateSubject(new Subject(id, name, description, professorId));
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            } else {
+                try {
+                    dbConnection.deleteSubject(id);
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            }
+            updateSubjects(scene, dbConnection);
+        });
+
+        Button subjectsUpdateBtn = (Button) scene.lookup("#subjectsUpdateBtn");
+        subjectsUpdateBtn.setOnAction(e -> {
+            updateSubjects(scene, dbConnection);
+        });
+    }
+    public void initializeSubjects(Scene scene, DBConnection dbConnection) {
+        TableView subjectsTable = (TableView) scene.lookup("#subjectsTable");
+
+        TableColumn<Subject, String> column1 =
+                new TableColumn<>("ID");
+        column1.setCellValueFactory(
+                new PropertyValueFactory<>("subjectId"));
+
+        TableColumn<Subject, String> column2 =
+                new TableColumn<>("Название");
+        column2.setCellValueFactory(
+                new PropertyValueFactory<>("subjectName"));
+
+        TableColumn<Subject, String> column3 =
+                new TableColumn<>("Описание");
+        column3.setCellValueFactory(
+                new PropertyValueFactory<>("description"));
+
+        TableColumn<Subject, String> column4 =
+                new TableColumn<>("Преподаватель");
+        column4.setCellValueFactory(
+                new PropertyValueFactory<>("professorId"));
+
+        subjectsTable.getColumns().clear();
+        subjectsTable.getColumns().addAll(column1, column2, column3, column4);
+
+        updateSubjects(scene, dbConnection);
+    }
+    private void updateSubjects(Scene scene, DBConnection dbConnection) {
+        TableView subjectsTable = (TableView) scene.lookup("#subjectsTable");
+
+        List<Subject> subjectList = dbConnection.getSubjects();
+        subjectsTable.getItems().clear();
+        subjectsTable.getItems().addAll(subjectList);
+
+        ChoiceBox<Integer> subjectProfessorIdField = (ChoiceBox) scene.lookup("#subjectProfessorIdField");
+        List<Professor> professorList = dbConnection.getProfessors();
+        List<Integer> professorIDs = professorList.stream().map(Professor::getProfessorId).toList();
+        subjectProfessorIdField.getItems().clear();
+        subjectProfessorIdField.getItems().addAll(professorIDs);
+
+        Label numOfSubjectsLabel = (Label) scene.lookup("#numOfSubjectsLabel");
+        numOfSubjectsLabel.setText(String.valueOf(subjectList.size()));
+    }
+
+
+
+    private void setCurriculaListeners(Scene scene, DBConnection dbConnection) {
+        TableView curriculaTable = (TableView) scene.lookup("#curriculaTable");
+
+        RadioButton curriculaAddRadio = (RadioButton) scene.lookup("#curriculaAddRadio");
+        RadioButton curriculaEditRadio = (RadioButton) scene.lookup("#curriculaEditRadio");
+        RadioButton curriculaDeleteRadio = (RadioButton) scene.lookup("#curriculaDeleteRadio");
+
+        TextField curriculumIdField = (TextField) scene.lookup("#curriculumIdField");
+        TextField curriculumLecturesHoursField = (TextField) scene.lookup("#curriculumLecturesHoursField");
+        TextField curriculumPracticeHoursField = (TextField) scene.lookup("#curriculumPracticeHoursField");
+        TextField curriculumDirectionField = (TextField) scene.lookup("#curriculumDirectionField");
+        ChoiceBox<Integer> curriculumSubjectId = (ChoiceBox<Integer>) scene.lookup("#curriculumSubjectId");
+
+        curriculaTable.setOnMouseClicked(e -> {
+            Curriculum curriculum = (Curriculum) curriculaTable.getFocusModel().getFocusedItem();
+
+            Platform.runLater(() -> {
+                if (!curriculaAddRadio.isSelected()) {
+                    curriculumIdField.setText(String.valueOf(curriculum.getCurriculumId()));
+                    curriculumLecturesHoursField.setText(String.valueOf(curriculum.getLectureHours()));
+                    curriculumPracticeHoursField.setText(String.valueOf(curriculum.getPracticeHours()));
+                    curriculumDirectionField.setText(curriculum.getDirection());
+                    curriculumSubjectId.setValue(curriculum.getSubjectId());
+                }
+            });
+        });
+
+        Button curriculumActionBtn = (Button) scene.lookup("#curriculumActionBtn");
+        curriculumActionBtn.setOnAction(e -> {
+            int id = 0;
+            int lectureHours = 0;
+            int practiceHours = 0;
+            String direction = "";
+            int subjectId = 0;
+
+            if (curriculaAddRadio.isSelected() || curriculaEditRadio.isSelected()) {
+                try {
+                    lectureHours = Integer.parseInt(curriculumLecturesHoursField.getText());
+                    practiceHours = Integer.parseInt(curriculumPracticeHoursField.getText());
+                    direction = curriculumDirectionField.getText();
+                    subjectId = curriculumSubjectId.getValue();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+            if (curriculaEditRadio.isSelected() || curriculaDeleteRadio.isSelected()) {
+                try {
+                    id = Integer.parseInt(curriculumIdField.getText());
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                    return;
+                }
+            }
+
+            if (curriculaAddRadio.isSelected()) {
+                try {
+                    dbConnection.addCurriculum(new Curriculum(0, lectureHours, practiceHours, direction, subjectId));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    System.out.println("Wrong format");
+                }
+            } else if (curriculaEditRadio.isSelected()) {
+                try {
+                    dbConnection.updateCurriculum(new Curriculum(id, lectureHours, practiceHours, direction, subjectId));
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            } else {
+                try {
+                    dbConnection.deleteSubject(id);
+                } catch (Exception ex) {
+                    System.out.println("Wrong format");
+                }
+            }
+            updateCurricula(scene, dbConnection);
+        });
+
+        Button curriculumsUpdateBtn = (Button) scene.lookup("#curriculumsUpdateBtn");
+        curriculumsUpdateBtn.setOnAction(e -> {
+            updateCurricula(scene, dbConnection);
+        });
+    }
+    public void initializeCurricula(Scene scene, DBConnection dbConnection) {
+        TableView curriculaTable = (TableView) scene.lookup("#curriculaTable");
+
+        TableColumn<Curriculum, Integer> column1 =
+                new TableColumn<>("ID");
+        column1.setCellValueFactory(
+                new PropertyValueFactory<>("curriculumId"));
+
+        TableColumn<Curriculum, Integer> column2 =
+                new TableColumn<>("Часы лекций");
+        column2.setCellValueFactory(
+                new PropertyValueFactory<>("lectureHours"));
+
+        TableColumn<Curriculum, Integer> column3 =
+                new TableColumn<>("Часы практик");
+        column3.setCellValueFactory(
+                new PropertyValueFactory<>("practiceHours"));
+
+        TableColumn<Curriculum, String> column4 =
+                new TableColumn<>("Направление");
+        column4.setCellValueFactory(
+                new PropertyValueFactory<>("direction"));
+
+        TableColumn<Curriculum, Integer> column5 =
+                new TableColumn<>("ID предмета");
+        column5.setCellValueFactory(
+                new PropertyValueFactory<>("subjectId"));
+
+        curriculaTable.getColumns().clear();
+        curriculaTable.getColumns().addAll(column1, column2, column3, column4, column5);
+
+        updateCurricula(scene, dbConnection);
+    }
+    private void updateCurricula(Scene scene, DBConnection dbConnection) {
+        TableView curriculaTable = (TableView) scene.lookup("#curriculaTable");
+
+        List<Curriculum> curriculumList = dbConnection.getCurricula();
+        curriculaTable.getItems().clear();
+        curriculaTable.getItems().addAll(curriculumList);
+
+        ChoiceBox<Integer> curriculumSubjectId = (ChoiceBox<Integer>) scene.lookup("#curriculumSubjectId");
+        List<Subject> subjectList = dbConnection.getSubjects();
+        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
+        curriculumSubjectId.getItems().clear();
+        curriculumSubjectId.getItems().addAll(subjectIDs);
+
+        Label numOfCurriculasLabel = (Label) scene.lookup("#numOfCurriculasLabel");
+        numOfCurriculasLabel.setText(String.valueOf(curriculumList.size()));
+    }
+
+    public void initializeLoadingTab(Scene scene, Stage stage, DBConnection dbConnection) {
+
+        AnchorPane loadingTabAnchorPane = (AnchorPane) scene.lookup("#loadingTabAnchorPane");
+        loadingTabAnchorPane.prefWidthProperty().bind(scene.widthProperty());
+        VBox loadedVBox = (VBox) scene.lookup("#loadedVBox");
+        loadedVBox.prefWidthProperty().bind(scene.widthProperty());
+        HBox loadedHBox = (HBox) scene.lookup("#loadedHBox");
+        loadedHBox.prefWidthProperty().bind(scene.widthProperty());
+        VBox loadedSubjectsVBox = (VBox) scene.lookup("#loadedSubjectsVBox");
+        loadedSubjectsVBox.prefWidthProperty().bind(scene.widthProperty());
+        loadedSubjectsVBox.setMaxWidth(700);
+        VBox loadedHoursVBox = (VBox) scene.lookup("#loadedHoursVBox");
+        loadedHoursVBox.prefWidthProperty().bind(scene.widthProperty());
+
+        // Open file func
+        Button openFileBtn = (Button) scene.lookup("#openFileBtn");
+        Button loadBtn = (Button) scene.lookup("#loadBtn");
+        FileChooser fileChooser = new FileChooser();
+
+        var ref = new Object() {
+            List<String> subjectList;
+            List<SemesterHoursData> semesterHoursDataList;
+            String direction;
+        };
+
+        openFileBtn.setOnAction(e -> {
+            File selectedFile = fileChooser.showOpenDialog(stage);
+            System.out.println("selectedFile = " + selectedFile);
+
+            CurriculumCalculator curriculumCalculator = new CurriculumCalculator(selectedFile);
+            curriculumCalculator.initialize(scene, dbConnection);
+
+            ref.subjectList = curriculumCalculator.getSubjects();
+            ref.semesterHoursDataList = curriculumCalculator.getSemesterHoursDataList();
+            ref.direction = curriculumCalculator.getDirection();
+        });
+
+        loadBtn.setOnAction(e -> {
+            List<Subject> subjects = dbConnection.getSubjects();
+            List<String> subjectNames = subjects.stream().map(Subject::getSubjectName).toList();
+            for (String s : ref.subjectList) {
+                if (subjectNames.contains(s)) {
+                    continue;
+                }
+
+                Subject newSubject = new Subject(0, s, "", 0);
+                dbConnection.addSubject(newSubject);
+            }
+
+            subjects = dbConnection.getSubjects();
+
+            for (SemesterHoursData d : ref.semesterHoursDataList) {
+                Curriculum newCurriculum = new Curriculum(
+                        0,
+                        d.lectureHours,
+                        d.practiceHours,
+                        ref.direction,
+                        subjects.stream().filter(x -> Objects.equals(x.getSubjectName(), d.subject)).toList().get(0).getSubjectId()
+                        );
+
+                dbConnection.addCurriculum(newCurriculum);
+            }
+        });
+
+        Button clearSubjectsBtn = (Button) scene.lookup("#clearSubjectsBtn");
+        clearSubjectsBtn.setOnAction(e -> {
+            dbConnection.truncateSubjects();
+        });
+        Button clearCurriculaBtn = (Button) scene.lookup("#clearCurriculaBtn");
+        clearCurriculaBtn.setOnAction(e -> {
+            dbConnection.truncateCurricula();
+        });
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+}
