@@ -418,7 +418,7 @@ public class DBConnection extends Observable {
 
 
     public List<Curriculum> getCurricula() {
-        String sql = "SELECT * FROM curriculums";
+        String sql = "SELECT * FROM curricula";
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -444,7 +444,8 @@ public class DBConnection extends Observable {
                         resultSet.getInt("lecture_hours"),
                         resultSet.getInt("practice_hours"),
                         resultSet.getString("direction"),
-                        resultSet.getInt("subject_id")
+                        resultSet.getInt("subject_id"),
+                        resultSet.getInt("semester")
                 );
                 curriculumList.add(curriculum);
             }
@@ -455,7 +456,7 @@ public class DBConnection extends Observable {
         return curriculumList;
     }
     public boolean addCurriculum(Curriculum curriculum) {
-        String sql = "INSERT INTO curriculums (lecture_hours, practice_hours, direction, subject_id) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO curricula (lecture_hours, practice_hours, direction, subject_id, semester) VALUES (?, ?, ?, ?, ?)";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -471,6 +472,7 @@ public class DBConnection extends Observable {
             preparedStatement.setInt(2, curriculum.getPracticeHours());
             preparedStatement.setString(3, curriculum.getDirection());
             preparedStatement.setInt(4, curriculum.getSubjectId());
+            preparedStatement.setInt(5, curriculum.getSemester());
 
             System.out.println(preparedStatement);
 
@@ -483,8 +485,8 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean updateCurriculum(Curriculum curriculum) {
-        String sql = "UPDATE curriculums\n" +
-                "SET lecture_hours = ?, practice_hours = ?, direction = ?, subject_id = ?\n" +
+        String sql = "UPDATE curricula\n" +
+                "SET lecture_hours = ?, practice_hours = ?, direction = ?, subject_id = ?, semester = ?\n" +
                 "WHERE curriculum_id = ?;";
 
         PreparedStatement preparedStatement = null;
@@ -501,7 +503,8 @@ public class DBConnection extends Observable {
             preparedStatement.setInt(2, curriculum.getPracticeHours());
             preparedStatement.setString(3, curriculum.getDirection());
             preparedStatement.setInt(4, curriculum.getSubjectId());
-            preparedStatement.setInt(5, curriculum.getCurriculumId());
+            preparedStatement.setInt(5, curriculum.getSemester());
+            preparedStatement.setInt(6, curriculum.getCurriculumId());
 
             System.out.println(preparedStatement);
 
@@ -514,7 +517,7 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean deleteCurriculum(int id) {
-        String sql = "DELETE FROM curriculums\n" +
+        String sql = "DELETE FROM curricula\n" +
                 "WHERE curriculum_id = ?;";
 
         return executeDelete(id, sql);
@@ -567,7 +570,7 @@ public class DBConnection extends Observable {
     }
 
     public boolean truncateCurricula() {
-        String sql = "TRUNCATE TABLE curriculums";
+        String sql = "TRUNCATE TABLE curricula";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;

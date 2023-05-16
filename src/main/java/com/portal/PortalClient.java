@@ -3,6 +3,7 @@ package com.portal;
 import com.portal.model.*;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -46,9 +47,6 @@ public class PortalClient extends Application {
         Label userLabel = (Label) scene.lookup("#userLabel");
         Button logoutBtn = (Button) scene.lookup("#logoutBtn");
 
-
-        initializeLoadingTab(scene, stage, dbConnection);
-
         disableTabs(scene, true);
 
         setGroupsListeners(scene, dbConnection);
@@ -75,6 +73,9 @@ public class PortalClient extends Application {
                     initializeProfessors(scene, dbConnection);
                     initializeSubjects(scene, dbConnection);
                     initializeCurricula(scene, dbConnection);
+
+                    initializeLoadingTab(scene, stage, dbConnection);
+                    initializeDistributionTab(scene, dbConnection);
                 } else {
                     loginLabel.setText("Ошибка");
 
@@ -98,7 +99,7 @@ public class PortalClient extends Application {
 
             disableTabs(scene, true);
         });
-        boolean autoLogin = true;
+        boolean autoLogin = false;
         if (autoLogin) {
             Platform.runLater(() -> {
                 try {
@@ -118,6 +119,9 @@ public class PortalClient extends Application {
                 initializeProfessors(scene, dbConnection);
                 initializeSubjects(scene, dbConnection);
                 initializeCurricula(scene, dbConnection);
+
+                initializeLoadingTab(scene, stage, dbConnection);
+                initializeDistributionTab(scene, dbConnection);
             });
         }
     }
@@ -583,6 +587,7 @@ public class PortalClient extends Application {
         TextField curriculumPracticeHoursField = (TextField) scene.lookup("#curriculumPracticeHoursField");
         TextField curriculumDirectionField = (TextField) scene.lookup("#curriculumDirectionField");
         ChoiceBox<Integer> curriculumSubjectId = (ChoiceBox<Integer>) scene.lookup("#curriculumSubjectId");
+        TextField curriculumSemesterField = (TextField) scene.lookup("#curriculumSemesterField");
 
         curriculaTable.setOnMouseClicked(e -> {
             Curriculum curriculum = (Curriculum) curriculaTable.getFocusModel().getFocusedItem();
@@ -594,6 +599,7 @@ public class PortalClient extends Application {
                     curriculumPracticeHoursField.setText(String.valueOf(curriculum.getPracticeHours()));
                     curriculumDirectionField.setText(curriculum.getDirection());
                     curriculumSubjectId.setValue(curriculum.getSubjectId());
+                    curriculumSemesterField.setText(String.valueOf(curriculum.getSemester()));
                 }
             });
         });
@@ -605,6 +611,7 @@ public class PortalClient extends Application {
             int practiceHours = 0;
             String direction = "";
             int subjectId = 0;
+            int semester = 0;
 
             if (curriculaAddRadio.isSelected() || curriculaEditRadio.isSelected()) {
                 try {
@@ -612,6 +619,7 @@ public class PortalClient extends Application {
                     practiceHours = Integer.parseInt(curriculumPracticeHoursField.getText());
                     direction = curriculumDirectionField.getText();
                     subjectId = curriculumSubjectId.getValue();
+                    semester = Integer.parseInt(curriculumSemesterField.getText());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("Wrong format");
@@ -629,14 +637,14 @@ public class PortalClient extends Application {
 
             if (curriculaAddRadio.isSelected()) {
                 try {
-                    dbConnection.addCurriculum(new Curriculum(0, lectureHours, practiceHours, direction, subjectId));
+                    dbConnection.addCurriculum(new Curriculum(0, lectureHours, practiceHours, direction, subjectId, semester));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("Wrong format");
                 }
             } else if (curriculaEditRadio.isSelected()) {
                 try {
-                    dbConnection.updateCurriculum(new Curriculum(id, lectureHours, practiceHours, direction, subjectId));
+                    dbConnection.updateCurriculum(new Curriculum(id, lectureHours, practiceHours, direction, subjectId, semester));
                 } catch (Exception ex) {
                     System.out.println("Wrong format");
                 }
@@ -683,8 +691,13 @@ public class PortalClient extends Application {
         column5.setCellValueFactory(
                 new PropertyValueFactory<>("subjectId"));
 
+        TableColumn<Curriculum, Integer> column6 =
+                new TableColumn<>("Семестр");
+        column6.setCellValueFactory(
+                new PropertyValueFactory<>("semester"));
+
         curriculaTable.getColumns().clear();
-        curriculaTable.getColumns().addAll(column1, column2, column3, column4, column5);
+        curriculaTable.getColumns().addAll(column1, column2, column3, column4, column5, column6);
 
         updateCurricula(scene, dbConnection);
     }
@@ -762,7 +775,8 @@ public class PortalClient extends Application {
                         d.lectureHours,
                         d.practiceHours,
                         ref.direction,
-                        subjects.stream().filter(x -> Objects.equals(x.getSubjectName(), d.subject)).toList().get(0).getSubjectId()
+                        subjects.stream().filter(x -> Objects.equals(x.getSubjectName(), d.subject)).toList().get(0).getSubjectId(),
+                        d.semester
                         );
 
                 dbConnection.addCurriculum(newCurriculum);
@@ -777,6 +791,109 @@ public class PortalClient extends Application {
         clearCurriculaBtn.setOnAction(e -> {
             dbConnection.truncateCurricula();
         });
+    }
+
+    public void initializeDistributionTab(Scene scene, DBConnection dbConnection) {
+
+        AnchorPane tabDistributionAnchorPane = (AnchorPane) scene.lookup("#tabDistributionAnchorPane");
+        tabDistributionAnchorPane.prefWidthProperty().bind(scene.widthProperty());
+
+        VBox tabDistributionVBox = (VBox) scene.lookup("#tabDistributionVBox");
+        tabDistributionVBox.prefWidthProperty().bind(scene.widthProperty());
+
+        ChoiceBox<Integer> distributionProfessorPicker = (ChoiceBox<Integer>) scene.lookup("#distributionProfessorPicker");
+        List<Professor> professorList = dbConnection.getProfessors();
+        List<Integer> professorIDs = professorList.stream().map(Professor::getProfessorId).toList();
+        distributionProfessorPicker.getItems().clear();
+        distributionProfessorPicker.getItems().addAll(professorIDs);
+
+        var ref = new Object() {
+            Professor pickedProfessor = professorList.get(0);
+        };
+
+        distributionProfessorPicker.setOnAction(e -> {
+            Label distributionProfessorNameLabel = (Label) scene.lookup("#distributionProfessorNameLabel");
+            Professor professor = professorList
+                    .stream()
+                    .filter(p -> Objects.equals(p.getProfessorId(), distributionProfessorPicker.getValue()))
+                    .toList()
+                    .get(0);
+            distributionProfessorNameLabel.setText(professor.getFullName());
+            ref.pickedProfessor = professor;
+        });
+
+        Button distributionActionBtn = (Button) scene.lookup("#distributionActionBtn");
+
+        distributionActionBtn.setOnAction(e -> {
+            List<Integer> subjectIDs = ref.pickedProfessor.getSubjects();
+            List<Subject> subjects = dbConnection
+                    .getSubjects()
+                    .stream()
+                    .filter(s -> subjectIDs.contains(s.getSubjectId()))
+                    .toList();
+            List<Curriculum> curricula = dbConnection
+                    .getCurricula()
+                    .stream()
+                    .filter(c -> subjectIDs.contains(c.getSubjectId()))
+                    .toList();
+
+            List<Curriculum> pickedCurricula = new ArrayList<>();
+
+            curricula.forEach(c -> {
+                List<Professor> professors = dbConnection
+                        .getProfessors()
+                        .stream()
+                        .filter(p -> p.getSubjects().contains(c.getSubjectId()))
+                        .toList();
+                int numOfProfessors = professors.size();
+
+                pickedCurricula.add(new Curriculum(
+                        0,
+                        c.getLectureHours() / numOfProfessors,
+                        c.getPracticeHours() / numOfProfessors,
+                        c.getDirection(),
+                        c.getSubjectId(),
+                        c.getSemester()
+                ));
+            });
+
+            TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
+            distributionTable.getItems().clear();
+            distributionTable.getItems().addAll(pickedCurricula);
+        });
+
+        List<Subject> subjects = dbConnection.getSubjects();
+        TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
+
+        TableColumn<Curriculum, String> column1 =
+                new TableColumn<>("Предмет");
+        column1.setCellValueFactory(
+                data -> new SimpleStringProperty(
+                        subjects.stream().filter(s -> Objects.equals(s.getSubjectId(), data.getValue().getSubjectId())).toList().get(0).getSubjectName()
+                ));
+
+        TableColumn<Curriculum, String> column2 =
+                new TableColumn<>("Направление");
+        column2.setCellValueFactory(
+                new PropertyValueFactory<>("direction"));
+
+        TableColumn<Curriculum, Integer> column3 =
+                new TableColumn<>("Семестр");
+        column3.setCellValueFactory(
+                new PropertyValueFactory<>("semester"));
+
+        TableColumn<Curriculum, Integer> column4 =
+                new TableColumn<>("Часы лекций");
+        column4.setCellValueFactory(
+                new PropertyValueFactory<>("lectureHours"));
+
+        TableColumn<Curriculum, Integer> column5 =
+                new TableColumn<>("Часы практик");
+        column5.setCellValueFactory(
+                new PropertyValueFactory<>("practiceHours"));
+
+        distributionTable.getColumns().clear();
+        distributionTable.getColumns().addAll(column1, column2, column3, column4, column5);
     }
 
     public static void main(String[] args) {

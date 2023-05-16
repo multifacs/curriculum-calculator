@@ -6,16 +6,18 @@ public class Curriculum {
     private Integer practiceHours;
     private String direction;
     private Integer subjectId;
+    private Integer semester;
 
     public Curriculum() {
     }
 
-    public Curriculum(Integer curriculumId, Integer lectureHours, Integer practiceHours, String direction, Integer subjectId) {
+    public Curriculum(Integer curriculumId, Integer lectureHours, Integer practiceHours, String direction, Integer subjectId, Integer semester) {
         this.curriculumId = curriculumId;
         this.lectureHours = lectureHours;
         this.practiceHours = practiceHours;
         this.direction = direction;
         this.subjectId = subjectId;
+        this.semester = semester;
     }
 
     public Integer getCurriculumId() {
@@ -56,5 +58,13 @@ public class Curriculum {
 
     public void setPracticeHours(Integer practiceHours) {
         this.practiceHours = practiceHours;
+    }
+
+    public Integer getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Integer semester) {
+        this.semester = semester;
     }
 }
