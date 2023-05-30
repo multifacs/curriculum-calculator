@@ -331,7 +331,7 @@
                                     </VBox>
                                     <VBox prefHeight="200.0" prefWidth="100.0">
                                        <children>
-                                          <Label text="ID преподавателя" />
+                                          <Label text="Преподаватель" />
                                           <ChoiceBox fx:id="subjectProfessorIdField" prefWidth="150.0" />
                                        </children>
                                     </VBox>
@@ -592,7 +592,7 @@
                                     </VBox>
                                     <VBox prefHeight="200.0" prefWidth="100.0">
                                        <children>
-                                          <Label text="ID предмета" />
+                                          <Label text="Предмет" />
                                           <ChoiceBox fx:id="curriculumSubjectId" prefWidth="150.0" />
                                        </children>
                                     </VBox>

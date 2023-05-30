@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.IndexedCheckModel;
 import org.kordamp.bootstrapfx.BootstrapFX;
@@ -99,7 +100,7 @@ public class PortalClient extends Application {
 
             disableTabs(scene, true);
         });
-        boolean autoLogin = false;
+        boolean autoLogin = true;
         if (autoLogin) {
             Platform.runLater(() -> {
                 try {
@@ -125,6 +126,7 @@ public class PortalClient extends Application {
             });
         }
     }
+
     private void disableTabs(Scene scene, boolean value) {
         Node tabProfessors = scene.lookup("#tabProfessors");
         tabProfessors.setDisable(value);
@@ -229,6 +231,7 @@ public class PortalClient extends Application {
             updateGroups(scene, dbConnection);
         });
     }
+
     public void initializeGroups(Scene scene, DBConnection dbConnection) {
         TableView groupsTable = (TableView) scene.lookup("#groupsTable");
 
@@ -262,6 +265,7 @@ public class PortalClient extends Application {
 
         updateGroups(scene, dbConnection);
     }
+
     private void updateGroups(Scene scene, DBConnection dbConnection) {
         TableView groupsTable = (TableView) scene.lookup("#groupsTable");
 
@@ -300,9 +304,18 @@ public class PortalClient extends Application {
                     professorBirthdateField.setValue(professor.getBirthDate());
                     professorAddressField.setText(String.valueOf(professor.getAddress()));
                     professorEmailField.setText(String.valueOf(professor.getEmail()));
-                    IndexedCheckModel<Integer> checkModel = professorSubjectsCombo.getCheckModel();
+                    IndexedCheckModel<Subject> checkModel = professorSubjectsCombo.getCheckModel();
                     professor.getSubjects().forEach(s -> {
-                        int index = checkModel.getItemIndex(s);
+                        int index = checkModel
+                                .getItemIndex(
+                                        dbConnection
+                                                .getLoadedSubjects()
+                                                .stream()
+                                                .filter(sub -> Objects
+                                                        .equals(sub.getSubjectId(), s))
+                                                .findFirst()
+                                                .orElse(null)
+                                );
                         checkModel.check(index);
                     });
 //                    checkModel.getCheckedIndices().addAll(professor.getSubjects());
@@ -332,7 +345,7 @@ public class PortalClient extends Application {
                     address = professorAddressField.getText();
                     email = professorEmailField.getText();
                     for (var i : professorSubjectsCombo.getCheckModel().getCheckedItems()) {
-                        subjects.add((Integer) i);
+                        subjects.add(((Subject) i).getSubjectId());
                     }
                     System.out.println("subjects = " + subjects);
                 } catch (Exception ex) {
@@ -380,6 +393,7 @@ public class PortalClient extends Application {
             updateProfessors(scene, dbConnection);
         });
     }
+
     public void initializeProfessors(Scene scene, DBConnection dbConnection) {
         TableView professorsTable = (TableView) scene.lookup("#professorsTable");
 
@@ -415,8 +429,17 @@ public class PortalClient extends Application {
 
         TableColumn<Professor, String> column7 =
                 new TableColumn<>("Предметы");
+//        column7.setCellValueFactory(
+//                new PropertyValueFactory<>("subjects"));
+
         column7.setCellValueFactory(
-                new PropertyValueFactory<>("subjects"));
+                data ->
+                        new SimpleStringProperty(
+                                dbConnection.getLoadedSubjects().stream().filter(
+                                        s -> data.getValue().getSubjects().contains(s.getSubjectId())
+                                ).toList().toString()
+                        )
+        );
 
         professorsTable.getColumns().clear();
         professorsTable.getColumns().addAll(column1, column2, column3, column4, column5, column6, column7);
@@ -428,6 +451,7 @@ public class PortalClient extends Application {
         VBox vBox = (VBox) scene.lookup("#professorsVBox");
         vBox.prefWidthProperty().bind(scene.widthProperty());
     }
+
     private void updateProfessors(Scene scene, DBConnection dbConnection) {
         TableView professorsTable = (TableView) scene.lookup("#professorsTable");
 
@@ -436,10 +460,12 @@ public class PortalClient extends Application {
         professorsTable.getItems().addAll(professorList);
 
         CheckComboBox professorSubjectsCombo = (CheckComboBox) scene.lookup("#professorSubjectsCombo");
-        List<Subject> subjectList = dbConnection.getSubjects();
-        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
+//        List<String> subjectList = dbConnection.getSubjects().stream().map(Subject::getSubjectName).toList();
+        dbConnection.setSubjects();
+//        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
         professorSubjectsCombo.getItems().clear();
-        professorSubjectsCombo.getItems().addAll(subjectIDs);
+//        professorSubjectsCombo.getItems().addAll(subjectIDs);
+        professorSubjectsCombo.getItems().addAll(dbConnection.getLoadedSubjects());
 
         Label numOfProfessorsLabel = (Label) scene.lookup("#numOfProfessorsLabel");
         numOfProfessorsLabel.setText(String.valueOf(professorList.size()));
@@ -528,6 +554,7 @@ public class PortalClient extends Application {
             updateSubjects(scene, dbConnection);
         });
     }
+
     public void initializeSubjects(Scene scene, DBConnection dbConnection) {
         TableView subjectsTable = (TableView) scene.lookup("#subjectsTable");
 
@@ -556,6 +583,7 @@ public class PortalClient extends Application {
 
         updateSubjects(scene, dbConnection);
     }
+
     private void updateSubjects(Scene scene, DBConnection dbConnection) {
         TableView subjectsTable = (TableView) scene.lookup("#subjectsTable");
 
@@ -572,7 +600,6 @@ public class PortalClient extends Application {
         Label numOfSubjectsLabel = (Label) scene.lookup("#numOfSubjectsLabel");
         numOfSubjectsLabel.setText(String.valueOf(subjectList.size()));
     }
-
 
 
     private void setCurriculaListeners(Scene scene, DBConnection dbConnection) {
@@ -663,6 +690,7 @@ public class PortalClient extends Application {
             updateCurricula(scene, dbConnection);
         });
     }
+
     public void initializeCurricula(Scene scene, DBConnection dbConnection) {
         TableView curriculaTable = (TableView) scene.lookup("#curriculaTable");
 
@@ -701,6 +729,7 @@ public class PortalClient extends Application {
 
         updateCurricula(scene, dbConnection);
     }
+
     private void updateCurricula(Scene scene, DBConnection dbConnection) {
         TableView curriculaTable = (TableView) scene.lookup("#curriculaTable");
 
@@ -777,7 +806,7 @@ public class PortalClient extends Application {
                         ref.direction,
                         subjects.stream().filter(x -> Objects.equals(x.getSubjectName(), d.subject)).toList().get(0).getSubjectId(),
                         d.semester
-                        );
+                );
 
                 dbConnection.addCurriculum(newCurriculum);
             }

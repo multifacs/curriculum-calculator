@@ -21,6 +21,7 @@ public class DBConnection extends Observable {
     private String statusText = "";
 
     private String user = "";
+
     public void setStatusText(String value) {
         synchronized (this) {
             this.statusText = value;
@@ -589,5 +590,14 @@ public class DBConnection extends Observable {
         }
 
         return rows > 0;
+    }
+
+    private List<Subject> subjects = new ArrayList<>();
+
+    public List<Subject> getLoadedSubjects() {
+        return this.subjects;
+    }
+    public void setSubjects() {
+        this.subjects = getSubjects();
     }
 }

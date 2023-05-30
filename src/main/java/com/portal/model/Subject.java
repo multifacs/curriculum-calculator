@@ -47,4 +47,9 @@ public class Subject {
     public void setProfessorId(Integer professorId) {
         this.professorId = professorId;
     }
+
+    @Override
+    public String toString() {
+        return this.getSubjectName();
+    }
 }
