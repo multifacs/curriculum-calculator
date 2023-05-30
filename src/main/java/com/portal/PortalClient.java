@@ -878,36 +878,31 @@ public class PortalClient extends Application {
         VBox tabDistributionVBox = (VBox) scene.lookup("#tabDistributionVBox");
         tabDistributionVBox.prefWidthProperty().bind(scene.widthProperty());
 
-        ChoiceBox<Integer> distributionProfessorPicker = (ChoiceBox<Integer>) scene.lookup("#distributionProfessorPicker");
-        List<Professor> professorList = dbConnection.getProfessors();
-        List<Integer> professorIDs = professorList.stream().map(Professor::getProfessorId).toList();
+        ChoiceBox<Professor> distributionProfessorPicker = (ChoiceBox<Professor>) scene.lookup("#distributionProfessorPicker");
+//        List<Integer> professorIDs = dbConnection.getLoadedProfessors().stream().map(Professor::getProfessorId).toList();
         distributionProfessorPicker.getItems().clear();
-        distributionProfessorPicker.getItems().addAll(professorIDs);
+        distributionProfessorPicker.getItems().addAll(dbConnection.getLoadedProfessors());
 
         var ref = new Object() {
-            Professor pickedProfessor = professorList.get(0);
+            Professor pickedProfessor = dbConnection.getLoadedProfessors().get(0);
         };
 
         distributionProfessorPicker.setOnAction(e -> {
-            Label distributionProfessorNameLabel = (Label) scene.lookup("#distributionProfessorNameLabel");
-            Professor professor = professorList
+            ref.pickedProfessor = dbConnection.getLoadedProfessors()
                     .stream()
-                    .filter(p -> Objects.equals(p.getProfessorId(), distributionProfessorPicker.getValue()))
+                    .filter(p -> Objects.equals(p.getProfessorId(), distributionProfessorPicker.getValue().getProfessorId()))
                     .toList()
                     .get(0);
-            distributionProfessorNameLabel.setText(professor.getFullName());
-            ref.pickedProfessor = professor;
         });
 
         Button distributionActionBtn = (Button) scene.lookup("#distributionActionBtn");
 
         distributionActionBtn.setOnAction(e -> {
             List<Integer> subjectIDs = ref.pickedProfessor.getSubjects();
-            List<Subject> subjects = dbConnection
-                    .getSubjects()
-                    .stream()
-                    .filter(s -> subjectIDs.contains(s.getSubjectId()))
-                    .toList();
+//            List<Subject> subjects = dbConnection.getLoadedSubjects()
+//                    .stream()
+//                    .filter(s -> subjectIDs.contains(s.getSubjectId()))
+//                    .toList();
             List<Curriculum> curricula = dbConnection
                     .getCurricula()
                     .stream()
@@ -943,34 +938,41 @@ public class PortalClient extends Application {
         TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
 
         TableColumn<Curriculum, String> column1 =
-                new TableColumn<>("Предмет");
+                new TableColumn<>("Преподаватель");
         column1.setCellValueFactory(
+                data -> new SimpleStringProperty(
+                        ref.pickedProfessor.getFullName()
+                ));
+
+        TableColumn<Curriculum, String> column2 =
+                new TableColumn<>("Предмет");
+        column2.setCellValueFactory(
                 data -> new SimpleStringProperty(
                         subjects.stream().filter(s -> Objects.equals(s.getSubjectId(), data.getValue().getSubjectId())).toList().get(0).getSubjectName()
                 ));
 
-        TableColumn<Curriculum, String> column2 =
+        TableColumn<Curriculum, String> column3 =
                 new TableColumn<>("Направление");
-        column2.setCellValueFactory(
+        column3.setCellValueFactory(
                 new PropertyValueFactory<>("direction"));
 
-        TableColumn<Curriculum, Integer> column3 =
+        TableColumn<Curriculum, Integer> column4 =
                 new TableColumn<>("Семестр");
-        column3.setCellValueFactory(
+        column4.setCellValueFactory(
                 new PropertyValueFactory<>("semester"));
 
-        TableColumn<Curriculum, Integer> column4 =
+        TableColumn<Curriculum, Integer> column5 =
                 new TableColumn<>("Часы лекций");
-        column4.setCellValueFactory(
+        column5.setCellValueFactory(
                 new PropertyValueFactory<>("lectureHours"));
 
-        TableColumn<Curriculum, Integer> column5 =
+        TableColumn<Curriculum, Integer> column6 =
                 new TableColumn<>("Часы практик");
-        column5.setCellValueFactory(
+        column6.setCellValueFactory(
                 new PropertyValueFactory<>("practiceHours"));
 
         distributionTable.getColumns().clear();
-        distributionTable.getColumns().addAll(column1, column2, column3, column4, column5);
+        distributionTable.getColumns().addAll(column1, column2, column3, column4, column5, column6);
     }
 
     public static void main(String[] args) {
