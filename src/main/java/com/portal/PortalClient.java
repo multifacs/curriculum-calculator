@@ -644,7 +644,7 @@ public class PortalClient extends Application {
         TextField curriculumLecturesHoursField = (TextField) scene.lookup("#curriculumLecturesHoursField");
         TextField curriculumPracticeHoursField = (TextField) scene.lookup("#curriculumPracticeHoursField");
         TextField curriculumDirectionField = (TextField) scene.lookup("#curriculumDirectionField");
-        ChoiceBox<Integer> curriculumSubjectId = (ChoiceBox<Integer>) scene.lookup("#curriculumSubjectId");
+        ChoiceBox<Subject> curriculumSubjectId = (ChoiceBox<Subject>) scene.lookup("#curriculumSubjectId");
         TextField curriculumSemesterField = (TextField) scene.lookup("#curriculumSemesterField");
 
         curriculaTable.setOnMouseClicked(e -> {
@@ -656,7 +656,10 @@ public class PortalClient extends Application {
                     curriculumLecturesHoursField.setText(String.valueOf(curriculum.getLectureHours()));
                     curriculumPracticeHoursField.setText(String.valueOf(curriculum.getPracticeHours()));
                     curriculumDirectionField.setText(curriculum.getDirection());
-                    curriculumSubjectId.setValue(curriculum.getSubjectId());
+                    curriculumSubjectId.setValue(dbConnection
+                            .getLoadedSubjects()
+                            .stream()
+                            .filter(s -> Objects.equals(s.getSubjectId(), curriculum.getSubjectId())).findFirst().orElse(new Subject()));
                     curriculumSemesterField.setText(String.valueOf(curriculum.getSemester()));
                 }
             });
@@ -676,7 +679,7 @@ public class PortalClient extends Application {
                     lectureHours = Integer.parseInt(curriculumLecturesHoursField.getText());
                     practiceHours = Integer.parseInt(curriculumPracticeHoursField.getText());
                     direction = curriculumDirectionField.getText();
-                    subjectId = curriculumSubjectId.getValue();
+                    subjectId = curriculumSubjectId.getValue().getSubjectId();
                     semester = Integer.parseInt(curriculumSemesterField.getText());
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -745,10 +748,18 @@ public class PortalClient extends Application {
         column4.setCellValueFactory(
                 new PropertyValueFactory<>("direction"));
 
-        TableColumn<Curriculum, Integer> column5 =
-                new TableColumn<>("ID предмета");
+        TableColumn<Curriculum, String> column5 =
+                new TableColumn<>("Предмет");
+//        column5.setCellValueFactory(
+//                new PropertyValueFactory<>("subjectId"));
         column5.setCellValueFactory(
-                new PropertyValueFactory<>("subjectId"));
+                data ->
+                        new SimpleStringProperty(
+                                dbConnection.getLoadedSubjects().stream().filter(
+                                        s -> Objects.equals(data.getValue().getSubjectId(), s.getSubjectId())
+                                ).findFirst().orElse(new Subject()).getSubjectName()
+                        )
+        );
 
         TableColumn<Curriculum, Integer> column6 =
                 new TableColumn<>("Семестр");
@@ -773,11 +784,12 @@ public class PortalClient extends Application {
         curriculaTable.getItems().clear();
         curriculaTable.getItems().addAll(curriculumList);
 
-        ChoiceBox<Integer> curriculumSubjectId = (ChoiceBox<Integer>) scene.lookup("#curriculumSubjectId");
-        List<Subject> subjectList = dbConnection.getSubjects();
-        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
+        ChoiceBox<Subject> curriculumSubjectId = (ChoiceBox<Subject>) scene.lookup("#curriculumSubjectId");
+//        List<Subject> subjectList = dbConnection.getSubjects();
+        dbConnection.getSubjects();
+//        List<Integer> subjectIDs = subjectList.stream().map(Subject::getSubjectId).toList();
         curriculumSubjectId.getItems().clear();
-        curriculumSubjectId.getItems().addAll(subjectIDs);
+        curriculumSubjectId.getItems().addAll(dbConnection.getLoadedSubjects());
 
         Label numOfCurriculasLabel = (Label) scene.lookup("#numOfCurriculasLabel");
         numOfCurriculasLabel.setText(String.valueOf(curriculumList.size()));
