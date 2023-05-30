@@ -600,4 +600,13 @@ public class DBConnection extends Observable {
     public void setSubjects() {
         this.subjects = getSubjects();
     }
+
+    private List<Professor> professors = new ArrayList<>();
+
+    public List<Professor> getLoadedProfessors() {
+        return this.professors;
+    }
+    public void setProfessors() {
+        this.professors = getProfessors();
+    }
 }

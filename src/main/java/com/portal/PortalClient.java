@@ -263,6 +263,11 @@ public class PortalClient extends Application {
         groupsTable.getColumns().clear();
         groupsTable.getColumns().addAll(column1, column2, column3, column4, column5);
 
+        AnchorPane anchorPane = (AnchorPane) scene.lookup("#groupsAnchorPane");
+        anchorPane.prefWidthProperty().bind(scene.widthProperty());
+        VBox vBox = (VBox) scene.lookup("#groupsVBox");
+        vBox.prefWidthProperty().bind(scene.widthProperty());
+
         updateGroups(scene, dbConnection);
     }
 
@@ -481,7 +486,7 @@ public class PortalClient extends Application {
 
         TextField subjectIdField = (TextField) scene.lookup("#subjectIdField");
         TextField subjectNameField = (TextField) scene.lookup("#subjectNameField");
-        ChoiceBox<Integer> subjectProfessorIdField = (ChoiceBox<Integer>) scene.lookup("#subjectProfessorIdField");
+        ChoiceBox<Professor> subjectProfessorIdField = (ChoiceBox<Professor>) scene.lookup("#subjectProfessorIdField");
         TextField descField = (TextField) scene.lookup("#descField");
 
         subjectsTable.setOnMouseClicked(e -> {
@@ -492,7 +497,7 @@ public class PortalClient extends Application {
                     subjectIdField.setText(String.valueOf(subject.getSubjectId()));
                     subjectNameField.setText(String.valueOf(subject.getSubjectName()));
                     descField.setText(String.valueOf(subject.getDescription()));
-                    subjectProfessorIdField.setValue(subject.getProfessorId());
+                    subjectProfessorIdField.setValue(dbConnection.getLoadedProfessors().stream().filter(p -> Objects.equals(p.getProfessorId(), subject.getProfessorId())).findFirst().orElse(null));
                 }
             });
         });
@@ -509,7 +514,7 @@ public class PortalClient extends Application {
                     name = subjectNameField.getText();
                     assert name.length() > 0;
                     description = descField.getText();
-                    professorId = subjectProfessorIdField.getValue();
+                    professorId = subjectProfessorIdField.getValue().getProfessorId();
                     System.out.println("professorId = " + professorId);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -575,11 +580,37 @@ public class PortalClient extends Application {
 
         TableColumn<Subject, String> column4 =
                 new TableColumn<>("Преподаватель");
+//        column4.setCellValueFactory(
+//                new PropertyValueFactory<>("professorId"));
+
         column4.setCellValueFactory(
-                new PropertyValueFactory<>("professorId"));
+                data ->
+                        new SimpleStringProperty(
+                                Objects
+                                        .requireNonNull(
+                                                dbConnection
+                                                        .getLoadedProfessors()
+                                                        .stream()
+                                                        .filter(
+                                                                s -> Objects
+                                                                        .equals(data
+                                                                                        .getValue()
+                                                                                        .getProfessorId(),
+                                                                                s.getProfessorId())
+                                                        )
+                                                        .findFirst()
+                                                        .orElse(new Professor()))
+                                        .getFullName()
+                        )
+        );
 
         subjectsTable.getColumns().clear();
         subjectsTable.getColumns().addAll(column1, column2, column3, column4);
+
+        AnchorPane anchorPane = (AnchorPane) scene.lookup("#subjectsAnchorPane");
+        anchorPane.prefWidthProperty().bind(scene.widthProperty());
+        VBox vBox = (VBox) scene.lookup("#subjectsVBox");
+        vBox.prefWidthProperty().bind(scene.widthProperty());
 
         updateSubjects(scene, dbConnection);
     }
@@ -591,11 +622,11 @@ public class PortalClient extends Application {
         subjectsTable.getItems().clear();
         subjectsTable.getItems().addAll(subjectList);
 
-        ChoiceBox<Integer> subjectProfessorIdField = (ChoiceBox) scene.lookup("#subjectProfessorIdField");
-        List<Professor> professorList = dbConnection.getProfessors();
-        List<Integer> professorIDs = professorList.stream().map(Professor::getProfessorId).toList();
+        ChoiceBox<Professor> subjectProfessorIdField = (ChoiceBox) scene.lookup("#subjectProfessorIdField");
+        dbConnection.setProfessors();
+//        List<Integer> professorIDs = dbConnection.getLoadedProfessors().stream().map(Professor::getProfessorId).toList();
         subjectProfessorIdField.getItems().clear();
-        subjectProfessorIdField.getItems().addAll(professorIDs);
+        subjectProfessorIdField.getItems().addAll(dbConnection.getLoadedProfessors());
 
         Label numOfSubjectsLabel = (Label) scene.lookup("#numOfSubjectsLabel");
         numOfSubjectsLabel.setText(String.valueOf(subjectList.size()));
@@ -726,6 +757,11 @@ public class PortalClient extends Application {
 
         curriculaTable.getColumns().clear();
         curriculaTable.getColumns().addAll(column1, column2, column3, column4, column5, column6);
+
+        AnchorPane anchorPane = (AnchorPane) scene.lookup("#curriculaAnchorPane");
+        anchorPane.prefWidthProperty().bind(scene.widthProperty());
+        VBox vBox = (VBox) scene.lookup("#curriculaVBox");
+        vBox.prefWidthProperty().bind(scene.widthProperty());
 
         updateCurricula(scene, dbConnection);
     }

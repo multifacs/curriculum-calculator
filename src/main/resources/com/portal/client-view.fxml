@@ -279,9 +279,9 @@
       </Tab>
       <Tab fx:id="tabSubjects" text="Предметы">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <AnchorPane fx:id="subjectsAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+                  <VBox fx:id="subjectsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
                      <children>
                         <VBox prefHeight="72.0" prefWidth="600.0">
                            <children>
@@ -307,7 +307,7 @@
                                     </RadioButton>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                                  <children>
                                     <VBox prefHeight="200.0" prefWidth="100.0">
                                        <children>
@@ -392,9 +392,9 @@
       </Tab>
       <Tab fx:id="tabGroups" text="Группы">
         <content>
-          <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="370.0" prefWidth="600.0">
+          <AnchorPane fx:id="groupsAnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="370.0" prefWidth="600.0">
                <children>
-                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+                  <VBox fx:id="groupsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
                      <children>
                         <VBox prefHeight="72.0" prefWidth="600.0">
                            <children>
@@ -524,9 +524,9 @@
       </Tab>
       <Tab fx:id="tabCurriculums" text="Учебные планы">
         <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <AnchorPane fx:id="curriculaAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+                  <VBox fx:id="curriculaVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
                      <children>
                         <VBox prefHeight="72.0" prefWidth="600.0">
                            <children>

@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Professor {
     private Integer professorId;
-    private String fullName;
+    private String fullName = "Пусто";
     private String phoneNum;
     private LocalDate birthDate;
     private String address;
@@ -79,5 +79,10 @@ public class Professor {
 
     public void setSubjects(List<Integer> subjects) {
         this.subjects = subjects;
+    }
+
+    @Override
+    public String toString() {
+        return this.getFullName();
     }
 }
