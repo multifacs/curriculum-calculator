@@ -102,17 +102,7 @@
                         </HBox>
                         <HBox fx:id="loadedHBox" prefHeight="248.0" prefWidth="560.0">
                            <children>
-                              <VBox fx:id="loadedSubjectsVBox" prefHeight="248.0" prefWidth="249.0">
-                                 <children>
-                                    <Label text="Предметы" />
-                                    <TableView fx:id="loadedSubjectsTable" prefHeight="200.0" prefWidth="200.0">
-                                      <columns>
-                                        <TableColumn prefWidth="239.0" text="Предмет" />
-                                      </columns>
-                                    </TableView>
-                                 </children>
-                              </VBox>
-                              <VBox fx:id="loadedHoursVBox" prefHeight="240.0" prefWidth="432.0">
+                              <VBox fx:id="loadedHoursVBox" prefHeight="240.0" prefWidth="686.0">
                                  <children>
                                     <Label text="Часы" />
                                     <TableView fx:id="loadedHoursTable" prefHeight="200.0" prefWidth="290.0">

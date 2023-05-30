@@ -726,9 +726,9 @@ public class PortalClient extends Application {
         loadedVBox.prefWidthProperty().bind(scene.widthProperty());
         HBox loadedHBox = (HBox) scene.lookup("#loadedHBox");
         loadedHBox.prefWidthProperty().bind(scene.widthProperty());
-        VBox loadedSubjectsVBox = (VBox) scene.lookup("#loadedSubjectsVBox");
-        loadedSubjectsVBox.prefWidthProperty().bind(scene.widthProperty());
-        loadedSubjectsVBox.setMaxWidth(700);
+//        VBox loadedSubjectsVBox = (VBox) scene.lookup("#loadedSubjectsVBox");
+//        loadedSubjectsVBox.prefWidthProperty().bind(scene.widthProperty());
+//        loadedSubjectsVBox.setMaxWidth(700);
         VBox loadedHoursVBox = (VBox) scene.lookup("#loadedHoursVBox");
         loadedHoursVBox.prefWidthProperty().bind(scene.widthProperty());
 

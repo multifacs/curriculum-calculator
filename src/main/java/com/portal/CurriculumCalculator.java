@@ -211,18 +211,18 @@ public class CurriculumCalculator {
         dirLabel.setText(getDirection());
 
 
-        TableView<String> loadedSubjectsTable = (TableView) scene.lookup("#loadedSubjectsTable");
-
-        TableColumn<String, String> column1 =
-                new TableColumn<>("Предмет");
-        column1.setCellValueFactory(
-                data -> new SimpleStringProperty(data.getValue()));
-
-        loadedSubjectsTable.getColumns().clear();
-        loadedSubjectsTable.getColumns().addAll(column1);
-
-        loadedSubjectsTable.getItems().clear();
-        loadedSubjectsTable.getItems().addAll(subjects);
+//        TableView<String> loadedSubjectsTable = (TableView) scene.lookup("#loadedSubjectsTable");
+//
+//        TableColumn<String, String> column1 =
+//                new TableColumn<>("Предмет");
+//        column1.setCellValueFactory(
+//                data -> new SimpleStringProperty(data.getValue()));
+//
+//        loadedSubjectsTable.getColumns().clear();
+//        loadedSubjectsTable.getColumns().addAll(column1);
+//
+//        loadedSubjectsTable.getItems().clear();
+//        loadedSubjectsTable.getItems().addAll(subjects);
 
 
         TableView<SemesterHoursData> loadedHoursTable = (TableView) scene.lookup("#loadedHoursTable");
