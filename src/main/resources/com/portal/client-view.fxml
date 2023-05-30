@@ -657,7 +657,6 @@
                            <children>
                               <Label text="Преподаватель: " />
                               <ChoiceBox fx:id="distributionProfessorPicker" prefWidth="150.0" />
-                              <Label fx:id="distributionProfessorNameLabel" text="Имя" />
                               <Button fx:id="distributionActionBtn" mnemonicParsing="false" text="Рассчитать" />
                            </children>
                         </HBox>
