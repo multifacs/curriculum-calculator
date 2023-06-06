@@ -650,6 +650,7 @@
                               <TableColumn prefWidth="140.0" text="Часы практик" />
                           </columns>
                         </TableView>
+                        <Button fx:id="downloadXLS" mnemonicParsing="false" text="Скачать XLS" />
                      </children>
                      <padding>
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

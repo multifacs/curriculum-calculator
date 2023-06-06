@@ -3,23 +3,27 @@ package com.portal;
 import com.portal.model.Curriculum;
 import com.portal.model.Group;
 import com.portal.model.SemesterHoursData;
+import com.portal.model.Subject;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CurriculumCalculator {
 
@@ -254,5 +258,59 @@ public class CurriculumCalculator {
         loadedHoursTable.getItems().addAll(semesterHoursDataList);
     }
 
+    static public void saveFile(Stage stage, String professor, List<Curriculum> data, List<Subject> subjects) {
+        FileChooser fileChooser = new FileChooser();
+        File f = fileChooser.showSaveDialog(stage);
+        File camino = f.getAbsoluteFile();
+        String path = camino.getAbsolutePath();
+
+
+        XSSFWorkbook exceldoc = new XSSFWorkbook();
+        XSSFSheet sheet = exceldoc.createSheet("Java Books");
+
+        int rowCount = 0;
+        Row row = sheet.createRow(++rowCount);
+        int columnCount = 0;
+        Cell cell = row.createCell(++columnCount);
+        cell.setCellValue("Преподаватель");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Группа");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Предмет");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Направление");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Семестр");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Часы лекций");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Часы практик");
+
+
+        for (Curriculum c : data) {
+            row = sheet.createRow(++rowCount);
+            columnCount = 0;
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(professor);
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(c.groupName);
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(subjects.stream().filter(s -> Objects.equals(s.getSubjectId(), c.getSubjectId())).findFirst().get().getSubjectName());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(c.getDirection());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(c.getSemester());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(c.getLectureHours());
+            cell = row.createCell(++columnCount);
+            cell.setCellValue(c.getPracticeHours());
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(path)) {
+            exceldoc.write(outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 

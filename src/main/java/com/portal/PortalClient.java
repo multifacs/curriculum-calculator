@@ -76,7 +76,7 @@ public class PortalClient extends Application {
                     initializeCurricula(scene, dbConnection);
 
                     initializeLoadingTab(scene, stage, dbConnection);
-                    initializeDistributionTab(scene, dbConnection);
+                    initializeDistributionTab(stage, scene, dbConnection);
                 } else {
                     loginLabel.setText("Ошибка");
 
@@ -133,11 +133,11 @@ public class PortalClient extends Application {
                 initializeCurricula(scene, dbConnection);
 
                 initializeLoadingTab(scene, stage, dbConnection);
-                initializeDistributionTab(scene, dbConnection);
+                initializeDistributionTab(stage, scene, dbConnection);
 
                 Button distributionUpdBtn = (Button) scene.lookup("#distributionUpdBtn");
                 distributionUpdBtn.setOnAction(e -> {
-                    initializeDistributionTab(scene, dbConnection);
+                    initializeDistributionTab(stage, scene, dbConnection);
                 });
             });
         }
@@ -849,7 +849,7 @@ public class PortalClient extends Application {
         });
     }
 
-    public void initializeDistributionTab(Scene scene, DBConnection dbConnection) {
+    public void initializeDistributionTab(Stage stage, Scene scene, DBConnection dbConnection) {
 
         AnchorPane tabDistributionAnchorPane = (AnchorPane) scene.lookup("#tabDistributionAnchorPane");
         tabDistributionAnchorPane.prefWidthProperty().bind(scene.widthProperty());
@@ -867,6 +867,7 @@ public class PortalClient extends Application {
 
         var ref = new Object() {
             Professor pickedProfessor = dbConnection.getLoadedProfessors().get(0);
+            List<Curriculum> data = new ArrayList<>();
         };
 
         distributionProfessorPicker.setOnAction(e -> {
@@ -934,6 +935,8 @@ public class PortalClient extends Application {
             TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
             distributionTable.getItems().clear();
             distributionTable.getItems().addAll(pickedCurricula);
+
+            ref.data = pickedCurricula;
         });
 
         List<Subject> subjects = dbConnection.getSubjects();
@@ -983,6 +986,12 @@ public class PortalClient extends Application {
 
         distributionTable.getColumns().clear();
         distributionTable.getColumns().addAll(column1, column2, column3, column4, column5, column6, column7);
+
+        Button downloadXLSBtn = (Button) scene.lookup("#downloadXLS");
+        downloadXLSBtn.setOnAction(a -> {
+            System.out.println("bruh");
+            CurriculumCalculator.saveFile(stage, ref.pickedProfessor.getFullName(), ref.data, subjects);
+        });
     }
 
     public static void main(String[] args) {
