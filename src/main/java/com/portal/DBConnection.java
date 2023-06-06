@@ -125,6 +125,8 @@ public class DBConnection extends Observable {
                 
                 INSERT INTO "Professors" (full_name, birth_date, address, email, phone_number) VALUES
                 ('Мокеев', '1980-01-01',  '123', '123', '123');
+                INSERT INTO "Professors" (full_name, birth_date, address, email, phone_number) VALUES
+                ('Сысоев', '1977-01-01',  '123', '123', '123');
                 
                 DROP TABLE IF EXISTS "Curricula";
                 CREATE TABLE "Curricula"
@@ -144,8 +146,17 @@ public class DBConnection extends Observable {
                 direction character varying NOT NULL,
                 number_of_students integer,
                 group_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
-                number_group integer NOT NULL
+                number_group character varying NOT NULL
                 );
+                
+                INSERT INTO "Groups" (phone_number, direction, number_of_students, number_group) VALUES
+                ('+7898', '09.03.04 Программная инженерия',  '24', '381908-1');
+                INSERT INTO "Groups" (phone_number, direction, number_of_students, number_group) VALUES
+                ('+7123', '09.03.04 Программная инженерия',  '26', '381908-2');
+                INSERT INTO "Groups" (phone_number, direction, number_of_students, number_group) VALUES
+                ('+7222', '09.03.04 Программная инженерия',  '23', '381908-3');
+                INSERT INTO "Groups" (phone_number, direction, number_of_students, number_group) VALUES
+                ('+7454', '09.03.04 Программная инженерия',  '27', '381908-4');
                 
                 DROP TABLE IF EXISTS "Subjects";
                 CREATE TABLE "Subjects"
@@ -188,7 +199,7 @@ public class DBConnection extends Observable {
             while(resultSet.next()) {
                 Group group = new Group(
                         resultSet.getInt("group_id"),
-                        resultSet.getInt("number_group"),
+                        resultSet.getString("number_group"),
                         resultSet.getInt("number_of_students"),
                         resultSet.getString("direction"),
                         resultSet.getString("phone_number")
@@ -214,7 +225,7 @@ public class DBConnection extends Observable {
 
         try {
             assert preparedStatement != null;
-            preparedStatement.setInt(1, group.getGroupNum());
+            preparedStatement.setString(1, group.getGroupNum());
             preparedStatement.setInt(2, group.getStudentsNum());
             preparedStatement.setString(3, group.getDirection());
             preparedStatement.setString(4, group.getPhoneNum());
@@ -244,7 +255,7 @@ public class DBConnection extends Observable {
 
         try {
             assert preparedStatement != null;
-            preparedStatement.setInt(1, group.getGroupNum());
+            preparedStatement.setString(1, group.getGroupNum());
             preparedStatement.setInt(2, group.getStudentsNum());
             preparedStatement.setString(3, group.getDirection());
             preparedStatement.setString(4, group.getPhoneNum());

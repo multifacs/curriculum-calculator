@@ -101,7 +101,7 @@ public class PortalClient extends Application {
             disableTabs(scene, true);
         });
         boolean autoLogin = true;
-        boolean migrate = true;
+        boolean migrate = false;
         if (autoLogin) {
             Platform.runLater(() -> {
                 try {
@@ -116,6 +116,12 @@ public class PortalClient extends Application {
                     dbConnection.migrate();
                 }
 
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
                 userLabel.setText("test_user");
                 loginBtn.setDisable(true);
                 logoutBtn.setDisable(false);
@@ -128,6 +134,11 @@ public class PortalClient extends Application {
 
                 initializeLoadingTab(scene, stage, dbConnection);
                 initializeDistributionTab(scene, dbConnection);
+
+                Button distributionUpdBtn = (Button) scene.lookup("#distributionUpdBtn");
+                distributionUpdBtn.setOnAction(e -> {
+                    initializeDistributionTab(scene, dbConnection);
+                });
             });
         }
     }
@@ -181,14 +192,14 @@ public class PortalClient extends Application {
         Button groupActionBtn = (Button) scene.lookup("#groupActionBtn");
         groupActionBtn.setOnAction(e -> {
             int id = 0;
-            int groupNum = 0;
+            String groupNum = null;
             int studentsNum = 0;
             String direction = null;
             String phoneNum = null;
 
             if (groupsAddRadio.isSelected() || groupsEditRadio.isSelected()) {
                 try {
-                    groupNum = Integer.parseInt(numOfGroupField.getText());
+                    groupNum = numOfGroupField.getText();
                     if (numOfStudentsField.getText().length() != 0) {
                         studentsNum = Integer.parseInt(numOfStudentsField.getText());
                     }
@@ -846,6 +857,9 @@ public class PortalClient extends Application {
         VBox tabDistributionVBox = (VBox) scene.lookup("#tabDistributionVBox");
         tabDistributionVBox.prefWidthProperty().bind(scene.widthProperty());
 
+        dbConnection.setProfessors();
+        dbConnection.setSubjects();
+
         ChoiceBox<Professor> distributionProfessorPicker = (ChoiceBox<Professor>) scene.lookup("#distributionProfessorPicker");
 //        List<Integer> professorIDs = dbConnection.getLoadedProfessors().stream().map(Professor::getProfessorId).toList();
         distributionProfessorPicker.getItems().clear();
@@ -861,16 +875,20 @@ public class PortalClient extends Application {
                     .filter(p -> Objects.equals(p.getProfessorId(), distributionProfessorPicker.getValue().getProfessorId()))
                     .toList()
                     .get(0);
+            System.out.println("ref.pickedProfessor = " + ref.pickedProfessor.getSubjects());
         });
 
         Button distributionActionBtn = (Button) scene.lookup("#distributionActionBtn");
 
         distributionActionBtn.setOnAction(e -> {
+            dbConnection.setProfessors();
+            dbConnection.setSubjects();
+
             List<Integer> subjectIDs = ref.pickedProfessor.getSubjects();
-//            List<Subject> subjects = dbConnection.getLoadedSubjects()
-//                    .stream()
-//                    .filter(s -> subjectIDs.contains(s.getSubjectId()))
-//                    .toList();
+            List<Subject> subjects = dbConnection.getLoadedSubjects()
+                                .stream()
+                                .filter(s -> subjectIDs.contains(s.getSubjectId()))
+                                .toList();
             List<Curriculum> curricula = dbConnection
                     .getCurricula()
                     .stream()
@@ -916,7 +934,10 @@ public class PortalClient extends Application {
                 new TableColumn<>("Предмет");
         column2.setCellValueFactory(
                 data -> new SimpleStringProperty(
-                        subjects.stream().filter(s -> Objects.equals(s.getSubjectId(), data.getValue().getSubjectId())).toList().get(0).getSubjectName()
+                        subjects.stream().filter(s -> {
+                            System.out.println("data = " + data);
+                            return Objects.equals(s.getSubjectId(), data.getValue().getSubjectId());
+                        }).toList().get(0).getSubjectName()
                 ));
 
         TableColumn<Curriculum, String> column3 =

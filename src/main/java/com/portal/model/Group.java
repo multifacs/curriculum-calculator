@@ -3,7 +3,7 @@ package com.portal.model;
 public class Group {
 
     private Integer groupId;
-    private Integer groupNum;
+    private String groupNum;
     private Integer studentsNum;
     private String direction;
     private String phoneNum;
@@ -11,7 +11,7 @@ public class Group {
     public Group() {
     }
 
-    public Group(Integer groupId, Integer groupNum, Integer studentsNum, String direction, String phoneNum) {
+    public Group(Integer groupId, String groupNum, Integer studentsNum, String direction, String phoneNum) {
         this.groupId = groupId;
         this.groupNum = groupNum;
         this.studentsNum = studentsNum;
@@ -27,11 +27,11 @@ public class Group {
         this.groupId = groupId;
     }
 
-    public Integer getGroupNum() {
+    public String getGroupNum() {
         return groupNum;
     }
 
-    public void setGroupNum(Integer groupNum) {
+    public void setGroupNum(String groupNum) {
         this.groupNum = groupNum;
     }
 
