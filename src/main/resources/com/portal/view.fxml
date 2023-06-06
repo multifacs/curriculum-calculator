@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.CheckComboBox?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="471.0" prefWidth="724.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
+  <tabs>
+    <Tab fx:id="tabConnection" text="Подключение">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox prefHeight="372.0" prefWidth="600.0">
+              <children>
+                <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+                  <children>
+                    <Label styleClass="h5" text="Статус подключения к базе данных:" />
+                    <Label fx:id="loadingText" styleClass="h6" text="Label" />
+                    <ProgressIndicator fx:id="progressIndicator" scaleX="0.5" scaleY="0.5" />
+                  </children>
+                </HBox>
+                <VBox prefHeight="61.0" prefWidth="560.0">
+                  <children>
+                    <Label fx:id="loginLabel" styleClass="h5" text="Войдите в систему" />
+                    <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="560.0" spacing="10.0">
+                      <children>
+                        <TextField fx:id="usernameField" promptText="Имя пользователя">
+                          <cursor>
+                            <Cursor fx:constant="TEXT" />
+                          </cursor>
+                        </TextField>
+                        <PasswordField fx:id="passwordField" promptText="Пароль">
+                          <cursor>
+                            <Cursor fx:constant="TEXT" />
+                          </cursor>
+                        </PasswordField>
+                        <Button fx:id="loginBtn" mnemonicParsing="false" text="Войти">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+                <VBox prefHeight="59.0" prefWidth="560.0">
+                  <children>
+                    <Label styleClass="h5" text="Пользователь:" />
+                    <HBox alignment="CENTER_LEFT" prefHeight="43.0" prefWidth="560.0" spacing="10.0">
+                      <children>
+                        <Label fx:id="userLabel" prefHeight="17.0" prefWidth="120.0" text="user" />
+                        <Button fx:id="logoutBtn" disable="true" mnemonicParsing="false" text="Выйти">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children></AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabLoad" text="Загрузка">
+      <content>
+        <AnchorPane fx:id="loadingTabAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox fx:id="loadedVBox" prefHeight="423.0" prefWidth="723.0">
+              <children>
+                <HBox alignment="CENTER_LEFT" prefHeight="31.0" prefWidth="560.0" spacing="10.0">
+                  <children>
+                    <Label text="Загрузить план из файла:" />
+                    <Button fx:id="openFileBtn" mnemonicParsing="false" text="Открыть" />
+                  </children>
+                </HBox>
+                <HBox prefHeight="33.0" prefWidth="560.0">
+                  <children>
+                    <Label text="Направление: " />
+                    <Label fx:id="directionLabel" text="---" />
+                  </children>
+                </HBox>
+                <HBox fx:id="loadedHBox" prefHeight="248.0" prefWidth="560.0">
+                  <children>
+                    <VBox fx:id="loadedHoursVBox" prefHeight="240.0" prefWidth="686.0">
+                      <children>
+                        <Label text="Часы" />
+                        <TableView fx:id="loadedHoursTable" prefHeight="200.0" prefWidth="290.0">
+                          <columns>
+                            <TableColumn prefWidth="75.0" text="Предмет" />
+                            <TableColumn prefWidth="75.0" text="Семестр" />
+                            <TableColumn prefWidth="75.0" text="Лекции" />
+                            <TableColumn prefWidth="75.0" text="Практики" />
+                          </columns>
+                        </TableView>
+                      </children>
+                    </VBox>
+                  </children>
+                </HBox>
+                <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                  <children>
+                    <Button fx:id="loadBtn" mnemonicParsing="false" text="Загрузить" />
+                    <Button fx:id="clearSubjectsBtn" mnemonicParsing="false" text="Очистить предметы" />
+                    <Button fx:id="clearCurriculaBtn" mnemonicParsing="false" text="Очистить планы" />
+                  </children>
+                </HBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabProfessors" text="Преподаватели">
+      <content>
+        <AnchorPane fx:id="professorsAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox fx:id="professorsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+              <children>
+                <VBox prefHeight="72.0" prefWidth="600.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                      <children>
+                        <RadioButton fx:id="professorsAddRadio" mnemonicParsing="false" selected="true" text="Добавить">
+                          <toggleGroup>
+                            <ToggleGroup fx:id="professors" />
+                          </toggleGroup>
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="professorsEditRadio" mnemonicParsing="false" text="Изменить" toggleGroup="$professors">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="professorsDeleteRadio" mnemonicParsing="false" text="Удалить" toggleGroup="$professors">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                      </children>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                      <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="ID" />
+                            <TextField fx:id="professorIdField" editable="false">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="134.0">
+                          <children>
+                            <Label text="ФИО" />
+                            <TextField fx:id="professorNameField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="154.0">
+                          <children>
+                            <Label text="Тел. номер" />
+                            <TextField fx:id="professorPhoneNumField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="129.0">
+                          <children>
+                            <Label text="Дата рождения" />
+                            <DatePicker fx:id="professorBirthdateField" />
+                          </children>
+                        </VBox>
+                      </children>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                      <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Адрес" />
+                            <TextField fx:id="professorAddressField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Email" />
+                            <TextField fx:id="professorEmailField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="134.0">
+                          <children>
+                            <Label text="Предметы" />
+                            <CheckComboBox fx:id="professorSubjectsCombo" prefHeight="25.0" prefWidth="137.0" />
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="55.0" prefWidth="35.0">
+                          <children>
+                            <Label text=" " />
+                            <Button fx:id="professorsActionBtn" mnemonicParsing="false" text="ОК">
+                              <cursor>
+                                <Cursor fx:constant="HAND" />
+                              </cursor>
+                            </Button>
+                          </children>
+                        </VBox>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="24.0" prefWidth="330.0" spacing="20.0">
+                      <children>
+                        <Label text="Число преподавателей:" />
+                        <Label fx:id="numOfProfessorsLabel" text="0" />
+                        <Button fx:id="professorsUpdateBtn" mnemonicParsing="false" text="Обновить">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                    <TableView fx:id="professorsTable" prefHeight="200.0" prefWidth="200.0">
+                      <columns>
+                        <TableColumn prefWidth="75.0" text="ID" />
+                      </columns>
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor>
+                    </TableView>
+                  </children>
+                </VBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabSubjects" text="Предметы">
+      <content>
+        <AnchorPane fx:id="subjectsAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox fx:id="subjectsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+              <children>
+                <VBox prefHeight="72.0" prefWidth="600.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                      <children>
+                        <RadioButton fx:id="subjectsAddRadio" mnemonicParsing="false" selected="true" text="Добавить">
+                          <toggleGroup>
+                            <ToggleGroup fx:id="subjects" />
+                          </toggleGroup>
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="subjectsEditRadio" mnemonicParsing="false" text="Изменить" toggleGroup="$subjects">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="subjectsDeleteRadio" mnemonicParsing="false" text="Удалить" toggleGroup="$subjects">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                      </children>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                      <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="ID" />
+                            <TextField fx:id="subjectIdField" editable="false">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Название" />
+                            <TextField fx:id="subjectNameField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Преподаватель" />
+                            <ChoiceBox fx:id="subjectProfessorIdField" prefWidth="150.0" />
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="208.0">
+                          <children>
+                            <Label text="Описание" />
+                            <TextField fx:id="descField" prefHeight="25.0" prefWidth="243.0">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="55.0" prefWidth="35.0">
+                          <children>
+                            <Label text=" " />
+                            <Button fx:id="subjectsActionBtn" mnemonicParsing="false" text="ОК">
+                              <cursor>
+                                <Cursor fx:constant="HAND" />
+                              </cursor>
+                            </Button>
+                          </children>
+                        </VBox>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="24.0" prefWidth="330.0" spacing="20.0">
+                      <children>
+                        <Label text="Число предметов:" />
+                        <Label fx:id="numOfSubjectsLabel" text="0" />
+                        <Button fx:id="subjectsUpdateBtn" mnemonicParsing="false" text="Обновить">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                    <TableView fx:id="subjectsTable" prefHeight="200.0" prefWidth="200.0">
+                      <columns>
+                        <TableColumn prefWidth="75.0" text="ID" />
+                      </columns>
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor>
+                    </TableView>
+                  </children>
+                </VBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children></AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabGroups" text="Группы">
+      <content>
+        <AnchorPane fx:id="groupsAnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="370.0" prefWidth="600.0">
+          <children>
+            <VBox fx:id="groupsVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+              <children>
+                <VBox prefHeight="72.0" prefWidth="600.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                      <children>
+                        <RadioButton fx:id="groupsAddRadio" mnemonicParsing="false" selected="true" text="Добавить">
+                          <toggleGroup>
+                            <ToggleGroup fx:id="groups" />
+                          </toggleGroup>
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="groupsEditRadio" mnemonicParsing="false" text="Изменить" toggleGroup="$groups">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="groupsDeleteRadio" mnemonicParsing="false" text="Удалить" toggleGroup="$groups">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                      </children>
+                    </HBox>
+                    <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                      <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="ID" />
+                            <TextField fx:id="groupIdField" editable="false">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Номер группы" />
+                            <TextField fx:id="numOfGroupField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Число студентов" />
+                            <TextField fx:id="numOfStudentsField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Направление" />
+                            <TextField fx:id="dirField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Тел. номер" />
+                            <TextField fx:id="groupPhoneField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="55.0" prefWidth="35.0">
+                          <children>
+                            <Label text=" " />
+                            <Button fx:id="groupActionBtn" mnemonicParsing="false" text="ОК">
+                              <cursor>
+                                <Cursor fx:constant="HAND" />
+                              </cursor>
+                            </Button>
+                          </children>
+                        </VBox>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="24.0" prefWidth="330.0" spacing="20.0">
+                      <children>
+                        <Label text="Число групп:" />
+                        <Label fx:id="numOfGroupsLabel" text="0" />
+                        <Button fx:id="groupsUpdateBtn" mnemonicParsing="false" text="Обновить">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                    <TableView fx:id="groupsTable" prefHeight="200.0" prefWidth="200.0">
+                      <columns>
+                        <TableColumn prefWidth="75.0" text="ID" />
+                        <TableColumn prefWidth="75.0" text="№ группы" />
+                        <TableColumn prefWidth="131.0" text="Число студентов" />
+                        <TableColumn prefWidth="104.0" text="Направление" />
+                        <TableColumn prefWidth="96.0" text="Тел. номер" />
+                      </columns>
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor>
+                    </TableView>
+                  </children>
+                </VBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabCurriculums" text="Учебные планы">
+      <content>
+        <AnchorPane fx:id="curriculaAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox fx:id="curriculaVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="100.0" minWidth="100.0" prefHeight="372.0" prefWidth="600.0" spacing="5.0">
+              <children>
+                <VBox prefHeight="72.0" prefWidth="600.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                      <children>
+                        <RadioButton fx:id="curriculaAddRadio" mnemonicParsing="false" selected="true" text="Добавить">
+                          <toggleGroup>
+                            <ToggleGroup fx:id="curriculums" />
+                          </toggleGroup>
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="curriculaEditRadio" mnemonicParsing="false" text="Изменить" toggleGroup="$curriculums">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                        <RadioButton fx:id="curriculaDeleteRadio" mnemonicParsing="false" text="Удалить" toggleGroup="$curriculums">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </RadioButton>
+                      </children>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                      <children>
+                        <VBox prefHeight="42.0" prefWidth="46.0">
+                          <children>
+                            <Label text="ID" />
+                            <TextField fx:id="curriculumIdField" editable="false">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="79.0">
+                          <children>
+                            <Label text="Часы лекций" />
+                            <TextField fx:id="curriculumLecturesHoursField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="86.0">
+                          <children>
+                            <Label text="Часы практик" />
+                            <TextField fx:id="curriculumPracticeHoursField">
+                              <cursor>
+                                <Cursor fx:constant="TEXT" />
+                              </cursor>
+                            </TextField>
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Направление" />
+                            <TextField fx:id="curriculumDirectionField" />
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                          <children>
+                            <Label text="Предмет" />
+                            <ChoiceBox fx:id="curriculumSubjectId" prefWidth="150.0" />
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="42.0" prefWidth="62.0">
+                          <children>
+                            <Label text="Семестр" />
+                            <TextField fx:id="curriculumSemesterField" prefHeight="25.0" prefWidth="43.0" />
+                          </children>
+                        </VBox>
+                        <VBox prefHeight="55.0" prefWidth="35.0">
+                          <children>
+                            <Label text=" " />
+                            <Button fx:id="curriculumActionBtn" mnemonicParsing="false" text="ОК">
+                              <cursor>
+                                <Cursor fx:constant="HAND" />
+                              </cursor>
+                            </Button>
+                          </children>
+                        </VBox>
+                      </children>
+                    </HBox>
+                  </children>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                  <children>
+                    <HBox alignment="CENTER_LEFT" prefHeight="24.0" prefWidth="330.0" spacing="20.0">
+                      <children>
+                        <Label text="Число планов:" />
+                        <Label fx:id="numOfCurriculasLabel" text="0" />
+                        <Button fx:id="curriculumsUpdateBtn" mnemonicParsing="false" text="Обновить">
+                          <cursor>
+                            <Cursor fx:constant="HAND" />
+                          </cursor>
+                        </Button>
+                      </children>
+                    </HBox>
+                    <TableView fx:id="curriculaTable" prefHeight="200.0" prefWidth="200.0">
+                      <columns>
+                        <TableColumn prefWidth="75.0" text="ID" />
+                      </columns>
+                      <cursor>
+                        <Cursor fx:constant="HAND" />
+                      </cursor>
+                    </TableView>
+                  </children>
+                </VBox>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children></AnchorPane>
+      </content>
+    </Tab>
+    <Tab fx:id="tabDistribution" text="Распределение">
+      <content>
+        <AnchorPane fx:id="tabDistributionAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+          <children>
+            <VBox fx:id="tabDistributionVBox" prefHeight="443.0" prefWidth="724.0">
+              <children>
+                <HBox alignment="CENTER_LEFT" prefHeight="47.0" prefWidth="684.0" spacing="10.0">
+                  <children>
+                    <Label text="Преподаватель: " />
+                    <ChoiceBox fx:id="distributionProfessorPicker" prefWidth="150.0" />
+                    <Button fx:id="distributionActionBtn" mnemonicParsing="false" text="Рассчитать" />
+                  </children>
+                </HBox>
+                <TableView fx:id="distributionTable" prefHeight="200.0" prefWidth="200.0">
+                  <columns>
+                    <TableColumn prefWidth="75.0" text="Предмет" />
+                    <TableColumn prefWidth="150.0" text="Направление" />
+                    <TableColumn minWidth="0.0" prefWidth="0.0" text="Семестр" />
+                    <TableColumn prefWidth="134.0" text="Часы лекций" />
+                    <TableColumn prefWidth="140.0" text="Часы практик" />
+                  </columns>
+                </TableView>
+              </children>
+              <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+              </padding>
+            </VBox>
+          </children></AnchorPane>
+      </content>
+    </Tab>
+  </tabs>
+</TabPane>

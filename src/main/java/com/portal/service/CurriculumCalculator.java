@@ -1,9 +1,6 @@
-package com.portal;
+package com.portal.service;
 
-import com.portal.model.Curriculum;
-import com.portal.model.Group;
 import com.portal.model.SemesterHoursData;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -206,7 +203,7 @@ public class CurriculumCalculator {
         System.out.println("subjectCounter = " + subjectCounter);
     }
 
-    public void initialize(Scene scene, DBConnection dbConnection) {
+    public void initialize(Scene scene) {
         Label dirLabel = (Label) scene.lookup("#directionLabel");
         dirLabel.setText(getDirection());
 
