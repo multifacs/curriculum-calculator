@@ -13,17 +13,17 @@ public class UserRepository {
     }
 
     public void createTable() throws SQLException {
-        String SQL_QUERY = "DROP TABLE IF EXISTS \"Users\";\n" +
-                "\n" +
-                "CREATE TABLE IF NOT EXISTS \"Users\"\n" +
-                "(\n" +
-                "    username character varying NOT NULL,\n" +
-                "    password character varying NOT NULL,\n" +
-                "    CONSTRAINT \"Users_pkey\" PRIMARY KEY (username)\n" +
-                ")";
+        String SQL_QUERY = """
+                DROP TABLE IF EXISTS "Users";
+                CREATE TABLE IF NOT EXISTS "Users"
+                (
+                    username character varying NOT NULL,
+                    password character varying NOT NULL,
+                    CONSTRAINT "Users_pkey" PRIMARY KEY (username)
+                )""";
 
         try (Connection con = DataSource.getConnection();
-             PreparedStatement pst = con.prepareStatement( SQL_QUERY );) {
+             PreparedStatement pst = con.prepareStatement(SQL_QUERY);) {
             pst.executeUpdate();
         }
     }
@@ -32,7 +32,7 @@ public class UserRepository {
         String SQL_QUERY = "SELECT * FROM \"Users\" WHERE username = ? AND password = ?";
 
         try (Connection con = DataSource.getConnection();
-             PreparedStatement pst = con.prepareStatement( SQL_QUERY );) {
+             PreparedStatement pst = con.prepareStatement(SQL_QUERY);) {
             pst.setString(1, username);
             pst.setString(2, password);
 
