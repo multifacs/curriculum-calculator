@@ -101,6 +101,7 @@ public class PortalClient extends Application {
             disableTabs(scene, true);
         });
         boolean autoLogin = true;
+        boolean migrate = true;
         if (autoLogin) {
             Platform.runLater(() -> {
                 try {
@@ -110,6 +111,10 @@ public class PortalClient extends Application {
                 }
                 dbConnection.login("test_user", "123");
                 loginLabel.setText("Успешно");
+
+                if (migrate) {
+                    dbConnection.migrate();
+                }
 
                 userLabel.setText("test_user");
                 loginBtn.setDisable(true);
@@ -486,7 +491,6 @@ public class PortalClient extends Application {
 
         TextField subjectIdField = (TextField) scene.lookup("#subjectIdField");
         TextField subjectNameField = (TextField) scene.lookup("#subjectNameField");
-        ChoiceBox<Professor> subjectProfessorIdField = (ChoiceBox<Professor>) scene.lookup("#subjectProfessorIdField");
         TextField descField = (TextField) scene.lookup("#descField");
 
         subjectsTable.setOnMouseClicked(e -> {
@@ -497,7 +501,6 @@ public class PortalClient extends Application {
                     subjectIdField.setText(String.valueOf(subject.getSubjectId()));
                     subjectNameField.setText(String.valueOf(subject.getSubjectName()));
                     descField.setText(String.valueOf(subject.getDescription()));
-                    subjectProfessorIdField.setValue(dbConnection.getLoadedProfessors().stream().filter(p -> Objects.equals(p.getProfessorId(), subject.getProfessorId())).findFirst().orElse(null));
                 }
             });
         });
@@ -507,15 +510,12 @@ public class PortalClient extends Application {
             int id = 0;
             String name = null;
             String description = "";
-            int professorId = -1;
 
             if (subjectsAddRadio.isSelected() || subjectsEditRadio.isSelected()) {
                 try {
                     name = subjectNameField.getText();
                     assert name.length() > 0;
                     description = descField.getText();
-                    professorId = subjectProfessorIdField.getValue().getProfessorId();
-                    System.out.println("professorId = " + professorId);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("Wrong format");
@@ -533,14 +533,14 @@ public class PortalClient extends Application {
 
             if (subjectsAddRadio.isSelected()) {
                 try {
-                    dbConnection.addSubject(new Subject(0, name, description, professorId));
+                    dbConnection.addSubject(new Subject(0, name, description));
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     System.out.println("Wrong format");
                 }
             } else if (subjectsEditRadio.isSelected()) {
                 try {
-                    dbConnection.updateSubject(new Subject(id, name, description, professorId));
+                    dbConnection.updateSubject(new Subject(id, name, description));
                 } catch (Exception ex) {
                     System.out.println("Wrong format");
                 }
@@ -578,34 +578,8 @@ public class PortalClient extends Application {
         column3.setCellValueFactory(
                 new PropertyValueFactory<>("description"));
 
-        TableColumn<Subject, String> column4 =
-                new TableColumn<>("Преподаватель");
-//        column4.setCellValueFactory(
-//                new PropertyValueFactory<>("professorId"));
-
-        column4.setCellValueFactory(
-                data ->
-                        new SimpleStringProperty(
-                                Objects
-                                        .requireNonNull(
-                                                dbConnection
-                                                        .getLoadedProfessors()
-                                                        .stream()
-                                                        .filter(
-                                                                s -> Objects
-                                                                        .equals(data
-                                                                                        .getValue()
-                                                                                        .getProfessorId(),
-                                                                                s.getProfessorId())
-                                                        )
-                                                        .findFirst()
-                                                        .orElse(new Professor()))
-                                        .getFullName()
-                        )
-        );
-
         subjectsTable.getColumns().clear();
-        subjectsTable.getColumns().addAll(column1, column2, column3, column4);
+        subjectsTable.getColumns().addAll(column1, column2, column3);
 
         AnchorPane anchorPane = (AnchorPane) scene.lookup("#subjectsAnchorPane");
         anchorPane.prefWidthProperty().bind(scene.widthProperty());
@@ -621,12 +595,6 @@ public class PortalClient extends Application {
         List<Subject> subjectList = dbConnection.getSubjects();
         subjectsTable.getItems().clear();
         subjectsTable.getItems().addAll(subjectList);
-
-        ChoiceBox<Professor> subjectProfessorIdField = (ChoiceBox) scene.lookup("#subjectProfessorIdField");
-        dbConnection.setProfessors();
-//        List<Integer> professorIDs = dbConnection.getLoadedProfessors().stream().map(Professor::getProfessorId).toList();
-        subjectProfessorIdField.getItems().clear();
-        subjectProfessorIdField.getItems().addAll(dbConnection.getLoadedProfessors());
 
         Label numOfSubjectsLabel = (Label) scene.lookup("#numOfSubjectsLabel");
         numOfSubjectsLabel.setText(String.valueOf(subjectList.size()));
@@ -840,7 +808,7 @@ public class PortalClient extends Application {
                     continue;
                 }
 
-                Subject newSubject = new Subject(0, s, "", 0);
+                Subject newSubject = new Subject(0, s, "");
                 dbConnection.addSubject(newSubject);
             }
 

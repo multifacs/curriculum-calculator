@@ -14,7 +14,7 @@ public class DBConnection extends Observable {
     Connection connection;
     String jdbcUrl = "jdbc:postgresql://localhost:5432/portal";
     String username = "postgres";
-    String password = "root";
+    String password = "admin";
 
     Thread sqlThread;
 
@@ -56,7 +56,9 @@ public class DBConnection extends Observable {
     }
 
     public boolean login(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        String sql = """
+                SELECT * FROM "Users" WHERE username = ? AND password = ?
+                """;
 
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -97,8 +99,73 @@ public class DBConnection extends Observable {
         user = "";
     }
 
+    public void migrate() {
+        String SQL_QUERY = """
+                DROP TABLE IF EXISTS "Users";
+                CREATE TABLE "Users"
+                (
+                    username character varying NOT NULL,
+                    password character varying NOT NULL,
+                    CONSTRAINT "Users_pkey" PRIMARY KEY (username)
+                );
+                
+                INSERT INTO "Users" (username, password) VALUES ('test_user', '123');
+                
+                DROP TABLE IF EXISTS "Professors";
+                CREATE TABLE "Professors"
+                (
+                full_name character varying(255) NOT NULL,
+                birth_date date,
+                address character varying(255),
+                email character varying(255),
+                professor_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
+                phone_number character varying,
+                subjects integer[]
+                );
+                
+                INSERT INTO "Professors" (full_name, birth_date, address, email, phone_number) VALUES
+                ('Мокеев', '1980-01-01',  '123', '123', '123');
+                
+                DROP TABLE IF EXISTS "Curricula";
+                CREATE TABLE "Curricula"
+                (
+                curriculum_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
+                subject_id integer,
+                lecture_hours integer,
+                practice_hours integer,
+                semester integer,
+                direction character varying
+                );
+                
+                DROP TABLE IF EXISTS "Groups";
+                CREATE TABLE "Groups"
+                (
+                phone_number character varying NOT NULL,
+                direction character varying NOT NULL,
+                number_of_students integer,
+                group_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
+                number_group integer NOT NULL
+                );
+                
+                DROP TABLE IF EXISTS "Subjects";
+                CREATE TABLE "Subjects"
+                (
+                subject_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
+                subject_name character varying(255) NOT NULL,
+                description text
+                );
+                """;
+
+        try {
+            PreparedStatement pst = connection.prepareStatement(SQL_QUERY);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<Group> getGroups() {
-        String sql = "SELECT * FROM groups";
+        String sql = "SELECT * FROM \"Groups\"";
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -135,7 +202,7 @@ public class DBConnection extends Observable {
         return groupList;
     }
     public boolean addGroup(Group group) {
-        String sql = "INSERT INTO groups (number_group, number_of_students, direction, phone_number) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO \"Groups\" (number_group, number_of_students, direction, phone_number) VALUES (?, ?, ?, ?)";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -163,7 +230,7 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean updateGroup(Group group) {
-        String sql = "UPDATE groups\n" +
+        String sql = "UPDATE \"Groups\"\n" +
                 "SET number_group = ?, number_of_students = ?, direction = ?, phone_number = ?\n" +
                 "WHERE group_id = ?;";
 
@@ -194,14 +261,14 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean deleteGroup(int id) {
-        String sql = "DELETE FROM groups\n" +
+        String sql = "DELETE FROM \"Groups\"\n" +
                 "WHERE group_id = ?;";
 
         return executeDelete(id, sql);
     }
 
     public List<Professor> getProfessors() {
-        String sql = "SELECT * FROM professors";
+        String sql = "SELECT * FROM \"Professors\"";
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -222,9 +289,14 @@ public class DBConnection extends Observable {
         List<Professor> professorList = new ArrayList<>();
         try {
             while(resultSet.next()) {
-                List<Integer> subjects;
-                var objectArray = (Object []) resultSet.getArray("subjects").getArray();
-                subjects = Arrays.stream(objectArray).map(ob->(Integer)ob).collect(Collectors.toList());
+                List<Integer> subjects = new ArrayList<>();
+
+                try {
+                    var objectArray = (Object []) resultSet.getArray("subjects").getArray();
+                    subjects = Arrays.stream(objectArray).map(ob->(Integer)ob).collect(Collectors.toList());
+                } catch (NullPointerException nex) {
+
+                }
 
                 Professor professor = new Professor(
                         resultSet.getInt("professor_id"),
@@ -244,7 +316,7 @@ public class DBConnection extends Observable {
         return professorList;
     }
     public boolean addProfessor(Professor professor) {
-        String sql = "INSERT INTO professors (full_name, phone_number, birth_date, address, email, subjects) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO \"Professors\" (full_name, phone_number, birth_date, address, email, subjects) VALUES (?, ?, ?, ?, ?, ?)";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -275,7 +347,7 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean updateProfessor(Professor professor) {
-        String sql = "UPDATE professors\n" +
+        String sql = "UPDATE \"Professors\"\n" +
                 "SET full_name = ?, phone_number = ?, birth_date = ?, address = ?, email = ?, subjects = ?\n" +
                 "WHERE professor_id = ?;";
 
@@ -310,15 +382,14 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean deleteProfessor(int id) {
-        String sql = "DELETE FROM professors\n" +
+        String sql = "DELETE FROM \"Professors\"\n" +
                 "WHERE professor_id = ?;";
 
         return executeDelete(id, sql);
     }
 
-
     public List<Subject> getSubjects() {
-        String sql = "SELECT * FROM subjects";
+        String sql = "SELECT * FROM \"Subjects\"";
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -342,8 +413,7 @@ public class DBConnection extends Observable {
                 Subject subject = new Subject(
                         resultSet.getInt("subject_id"),
                         resultSet.getString("subject_name"),
-                        resultSet.getString("description"),
-                        resultSet.getInt("professor_id")
+                        resultSet.getString("description")
                 );
                 subjectList.add(subject);
             }
@@ -354,7 +424,7 @@ public class DBConnection extends Observable {
         return subjectList;
     }
     public boolean addSubject(Subject subject) {
-        String sql = "INSERT INTO subjects (subject_name, description, professor_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO \"Subjects\" (subject_name, description) VALUES (?, ?)";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -368,7 +438,6 @@ public class DBConnection extends Observable {
             assert preparedStatement != null;
             preparedStatement.setString(1, subject.getSubjectName());
             preparedStatement.setString(2, subject.getDescription());
-            preparedStatement.setInt(3, subject.getProfessorId());
 
             System.out.println(preparedStatement);
 
@@ -381,8 +450,8 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean updateSubject(Subject subject) {
-        String sql = "UPDATE subjects\n" +
-                "SET subject_name = ?, description = ?, professor_id = ?\n" +
+        String sql = "UPDATE \"Subjects\"\n" +
+                "SET subject_name = ?, description = ?\n" +
                 "WHERE subject_id = ?;";
 
         PreparedStatement preparedStatement = null;
@@ -397,8 +466,7 @@ public class DBConnection extends Observable {
             assert preparedStatement != null;
             preparedStatement.setString(1, subject.getSubjectName());
             preparedStatement.setString(2, subject.getDescription());
-            preparedStatement.setInt(3, subject.getProfessorId());
-            preparedStatement.setInt(4, subject.getSubjectId());
+            preparedStatement.setInt(3, subject.getSubjectId());
 
             System.out.println(preparedStatement);
 
@@ -411,7 +479,7 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean deleteSubject(int id) {
-        String sql = "DELETE FROM subjects\n" +
+        String sql = "DELETE FROM \"Subjects\"\n" +
                 "WHERE subject_id = ?;";
 
         return executeDelete(id, sql);
@@ -419,7 +487,7 @@ public class DBConnection extends Observable {
 
 
     public List<Curriculum> getCurricula() {
-        String sql = "SELECT * FROM curricula";
+        String sql = "SELECT * FROM \"Curricula\"";
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -457,7 +525,7 @@ public class DBConnection extends Observable {
         return curriculumList;
     }
     public boolean addCurriculum(Curriculum curriculum) {
-        String sql = "INSERT INTO curricula (lecture_hours, practice_hours, direction, subject_id, semester) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO \"Curricula\" (lecture_hours, practice_hours, direction, subject_id, semester) VALUES (?, ?, ?, ?, ?)";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -486,7 +554,7 @@ public class DBConnection extends Observable {
         return rows > 0;
     }
     public boolean updateCurriculum(Curriculum curriculum) {
-        String sql = "UPDATE curricula\n" +
+        String sql = "UPDATE \"Curricula\"\n" +
                 "SET lecture_hours = ?, practice_hours = ?, direction = ?, subject_id = ?, semester = ?\n" +
                 "WHERE curriculum_id = ?;";
 
@@ -549,7 +617,7 @@ public class DBConnection extends Observable {
     }
 
     public boolean truncateSubjects() {
-        String sql = "TRUNCATE TABLE subjects";
+        String sql = "TRUNCATE TABLE \"Subjects\"";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
@@ -571,7 +639,7 @@ public class DBConnection extends Observable {
     }
 
     public boolean truncateCurricula() {
-        String sql = "TRUNCATE TABLE curricula";
+        String sql = "TRUNCATE TABLE \"Curricula\"";
 
         PreparedStatement preparedStatement = null;
         int rows = 0;
