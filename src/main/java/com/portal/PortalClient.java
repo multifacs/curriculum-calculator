@@ -895,6 +895,7 @@ public class PortalClient extends Application {
                     .filter(c -> subjectIDs.contains(c.getSubjectId()))
                     .toList();
 
+            List<Group> groups = dbConnection.getGroups();
             List<Curriculum> pickedCurricula = new ArrayList<>();
 
             curricula.forEach(c -> {
@@ -904,15 +905,30 @@ public class PortalClient extends Application {
                         .filter(p -> p.getSubjects().contains(c.getSubjectId()))
                         .toList();
                 int numOfProfessors = professors.size();
+                Professor picked = professors.stream().filter(
+                        p -> Objects.equals(p.getFullName(), ref.pickedProfessor.getFullName())
+                ).findFirst().get();
+                int numOfCurrent = professors.indexOf(picked);
+                int groupsPerProfessor = groups.size() / numOfProfessors;
 
-                pickedCurricula.add(new Curriculum(
-                        0,
-                        c.getLectureHours() / numOfProfessors,
-                        c.getPracticeHours() / numOfProfessors,
-                        c.getDirection(),
-                        c.getSubjectId(),
-                        c.getSemester()
-                ));
+                System.out.println("numOfCurrent = " + numOfCurrent);
+
+                int startIndex = numOfCurrent * groupsPerProfessor;
+                int endIndex = (numOfCurrent + 1) * groupsPerProfessor;
+
+                for (int i = startIndex; i < endIndex; i++) {
+                    Curriculum cсс = new Curriculum(
+                            0,
+                            c.getLectureHours() / numOfProfessors,
+                            c.getPracticeHours() / numOfProfessors,
+                            c.getDirection(),
+                            c.getSubjectId(),
+                            c.getSemester()
+                    );
+                    cсс.groupName = groups.get(i).getGroupNum();
+                    pickedCurricula.add(cсс);
+                    System.out.println("cсс.groupName = " + cсс.groupName);
+                }
             });
 
             TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
@@ -931,37 +947,42 @@ public class PortalClient extends Application {
                 ));
 
         TableColumn<Curriculum, String> column2 =
-                new TableColumn<>("Предмет");
+                new TableColumn<>("Группа");
         column2.setCellValueFactory(
+                new PropertyValueFactory<>("groupName"));
+
+        TableColumn<Curriculum, String> column3 =
+                new TableColumn<>("Предмет");
+        column3.setCellValueFactory(
                 data -> new SimpleStringProperty(
                         subjects.stream().filter(s -> {
-                            System.out.println("data = " + data);
+//                            System.out.println("data = " + data);
                             return Objects.equals(s.getSubjectId(), data.getValue().getSubjectId());
                         }).toList().get(0).getSubjectName()
                 ));
 
-        TableColumn<Curriculum, String> column3 =
+        TableColumn<Curriculum, String> column4 =
                 new TableColumn<>("Направление");
-        column3.setCellValueFactory(
+        column4.setCellValueFactory(
                 new PropertyValueFactory<>("direction"));
 
-        TableColumn<Curriculum, Integer> column4 =
+        TableColumn<Curriculum, Integer> column5 =
                 new TableColumn<>("Семестр");
-        column4.setCellValueFactory(
+        column5.setCellValueFactory(
                 new PropertyValueFactory<>("semester"));
 
-        TableColumn<Curriculum, Integer> column5 =
+        TableColumn<Curriculum, Integer> column6 =
                 new TableColumn<>("Часы лекций");
-        column5.setCellValueFactory(
+        column6.setCellValueFactory(
                 new PropertyValueFactory<>("lectureHours"));
 
-        TableColumn<Curriculum, Integer> column6 =
+        TableColumn<Curriculum, Integer> column7 =
                 new TableColumn<>("Часы практик");
-        column6.setCellValueFactory(
+        column7.setCellValueFactory(
                 new PropertyValueFactory<>("practiceHours"));
 
         distributionTable.getColumns().clear();
-        distributionTable.getColumns().addAll(column1, column2, column3, column4, column5, column6);
+        distributionTable.getColumns().addAll(column1, column2, column3, column4, column5, column6, column7);
     }
 
     public static void main(String[] args) {

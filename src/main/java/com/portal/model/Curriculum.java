@@ -7,6 +7,7 @@ public class Curriculum {
     private String direction;
     private Integer subjectId;
     private Integer semester;
+    public String groupName;
 
     public Curriculum() {
     }
@@ -66,5 +67,13 @@ public class Curriculum {
 
     public void setSemester(Integer semester) {
         this.semester = semester;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }
