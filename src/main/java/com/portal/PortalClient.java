@@ -105,7 +105,7 @@ public class PortalClient extends Application {
         if (autoLogin) {
             Platform.runLater(() -> {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
