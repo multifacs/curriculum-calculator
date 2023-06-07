@@ -15,16 +15,16 @@ public class GroupRepository {
     }
 
     public void createTable() throws SQLException {
-        String SQL_QUERY = "DROP TABLE \"Groups\";\n" +
-                "\n" +
-                "CREATE TABLE \"Groups\"\n" +
-                "(\n" +
-                "phone_number character varying NOT NULL,\n" +
-                "direction character varying NOT NULL,\n" +
-                "number_of_students integer,\n" +
-                "group_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),\n" +
-                "number_group integer NOT NULL\n" +
-                ") ";
+        String SQL_QUERY = """
+                DROP TABLE "Groups";
+                CREATE TABLE "Groups"
+                (
+                phone_number character varying NOT NULL,
+                direction character varying NOT NULL,
+                number_of_students integer,
+                group_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 1000000 CACHE 1 ),
+                number_group integer NOT NULL
+                );""";
 
         try (Connection con = DataSource.getConnection();
              PreparedStatement pst = con.prepareStatement( SQL_QUERY );) {
