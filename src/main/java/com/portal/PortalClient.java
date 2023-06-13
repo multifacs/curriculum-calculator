@@ -869,6 +869,7 @@ public class PortalClient extends Application {
         var ref = new Object() {
             Professor pickedProfessor = dbConnection.getLoadedProfessors().get(0);
             List<Curriculum> data = new ArrayList<>();
+            AnnualInfo annualInfo = new AnnualInfo();
         };
 
         distributionProfessorPicker.setOnAction(e -> {
@@ -1000,6 +1001,17 @@ public class PortalClient extends Application {
             yearlySem8Label.setText("8 семестр: " + yearlySem8Count);
 
             ref.data = pickedCurricula;
+            ref.annualInfo.yearlyCount = yearlyCount;
+            ref.annualInfo.yearlyLecturesCount = yearlyLecturesCount;
+            ref.annualInfo.yearlyPracticesCount = yearlyPracticesCount;
+            ref.annualInfo.yearlySem1Count = yearlySem1Count;
+            ref.annualInfo.yearlySem2Count = yearlySem2Count;
+            ref.annualInfo.yearlySem3Count = yearlySem3Count;
+            ref.annualInfo.yearlySem4Count = yearlySem4Count;
+            ref.annualInfo.yearlySem5Count = yearlySem5Count;
+            ref.annualInfo.yearlySem6Count = yearlySem6Count;
+            ref.annualInfo.yearlySem7Count = yearlySem7Count;
+            ref.annualInfo.yearlySem8Count = yearlySem8Count;
         });
 
         List<Subject> subjects = dbConnection.getSubjects();
@@ -1053,7 +1065,7 @@ public class PortalClient extends Application {
         Button downloadXLSBtn = (Button) scene.lookup("#downloadXLS");
         downloadXLSBtn.setOnAction(a -> {
             System.out.println("bruh");
-            CurriculumCalculator.saveFile(stage, ref.pickedProfessor.getFullName(), ref.data, subjects);
+            CurriculumCalculator.saveFile(stage, ref.pickedProfessor.getFullName(), ref.data, subjects, ref.annualInfo);
         });
     }
 

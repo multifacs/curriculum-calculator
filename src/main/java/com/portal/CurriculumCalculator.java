@@ -1,9 +1,6 @@
 package com.portal;
 
-import com.portal.model.Curriculum;
-import com.portal.model.Group;
-import com.portal.model.SemesterHoursData;
-import com.portal.model.Subject;
+import com.portal.model.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -258,8 +255,10 @@ public class CurriculumCalculator {
         loadedHoursTable.getItems().addAll(semesterHoursDataList);
     }
 
-    static public void saveFile(Stage stage, String professor, List<Curriculum> data, List<Subject> subjects) {
+    static public void saveFile(Stage stage, String professor, List<Curriculum> data, List<Subject> subjects, AnnualInfo annualInfo) {
         FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XLSX files (*.xlsx)", "*.xlsx");
+        fileChooser.getExtensionFilters().add(extFilter);
         File f = fileChooser.showSaveDialog(stage);
         File camino = f.getAbsoluteFile();
         String path = camino.getAbsolutePath();
@@ -305,6 +304,58 @@ public class CurriculumCalculator {
             cell = row.createCell(++columnCount);
             cell.setCellValue(c.getPracticeHours());
         }
+        row = sheet.createRow(++rowCount);
+        columnCount = 0;
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Итого за год:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlyCount);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Итого лекций:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlyLecturesCount);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("Итого практик:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlyPracticesCount);
+
+        row = sheet.createRow(++rowCount);
+        columnCount = 0;
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("1 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem1Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("2 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem2Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("3 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem3Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("4 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem4Count);
+
+        row = sheet.createRow(++rowCount);
+        columnCount = 0;
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("5 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem5Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("6 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem6Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("7 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem7Count);
+        cell = row.createCell(++columnCount);
+        cell.setCellValue("8 семестр:");
+        cell = row.createCell(++columnCount);
+        cell.setCellValue(annualInfo.yearlySem8Count);
 
         try (FileOutputStream outputStream = new FileOutputStream(path)) {
             exceldoc.write(outputStream);
