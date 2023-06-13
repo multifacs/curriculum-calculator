@@ -881,6 +881,19 @@ public class PortalClient extends Application {
 
         Button distributionActionBtn = (Button) scene.lookup("#distributionActionBtn");
 
+        Label yearlyLabel = (Label) scene.lookup("#yearlyLabel");
+        Label yearlyLecturesLabel = (Label) scene.lookup("#yearlyLecturesLabel");
+        Label yearlyPracticesLabel = (Label) scene.lookup("#yearlyPracticesLabel");
+
+        Label yearlySem1Label = (Label) scene.lookup("#yearlySem1Label");
+        Label yearlySem2Label = (Label) scene.lookup("#yearlySem2Label");
+        Label yearlySem3Label = (Label) scene.lookup("#yearlySem3Label");
+        Label yearlySem4Label = (Label) scene.lookup("#yearlySem4Label");
+        Label yearlySem5Label = (Label) scene.lookup("#yearlySem5Label");
+        Label yearlySem6Label = (Label) scene.lookup("#yearlySem6Label");
+        Label yearlySem7Label = (Label) scene.lookup("#yearlySem7Label");
+        Label yearlySem8Label = (Label) scene.lookup("#yearlySem8Label");
+
         distributionActionBtn.setOnAction(e -> {
             dbConnection.setProfessors();
             dbConnection.setSubjects();
@@ -935,6 +948,55 @@ public class PortalClient extends Application {
             TableView<Curriculum> distributionTable = (TableView<Curriculum>) scene.lookup("#distributionTable");
             distributionTable.getItems().clear();
             distributionTable.getItems().addAll(pickedCurricula);
+
+            int yearlyCount = 0;
+            int yearlyLecturesCount = 0;
+            int yearlyPracticesCount = 0;
+
+            int yearlySem1Count = 0;
+            int yearlySem2Count = 0;
+            int yearlySem3Count = 0;
+            int yearlySem4Count = 0;
+            int yearlySem5Count = 0;
+            int yearlySem6Count = 0;
+            int yearlySem7Count = 0;
+            int yearlySem8Count = 0;
+
+            for (Curriculum c : pickedCurricula) {
+                yearlyCount += c.getLectureHours() + c.getPracticeHours();
+                yearlyLecturesCount += c.getLectureHours();
+                yearlyPracticesCount += c.getPracticeHours();
+
+                if (c.getSemester() == 1)
+                    yearlySem1Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 2)
+                    yearlySem2Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 3)
+                    yearlySem3Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 4)
+                    yearlySem4Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 5)
+                    yearlySem5Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 6)
+                    yearlySem6Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 7)
+                    yearlySem7Count += c.getLectureHours() + c.getPracticeHours();
+                if (c.getSemester() == 8)
+                    yearlySem8Count += c.getLectureHours() + c.getPracticeHours();
+            }
+
+            yearlyLabel.setText("Итого за год: " + yearlyCount);
+            yearlyLabel.setText("Итого лекций: " + yearlyLecturesCount);
+            yearlyLabel.setText("Итого практик: " + yearlyPracticesCount);
+
+            yearlyLabel.setText("1 семестр: " + yearlySem1Count);
+            yearlyLabel.setText("2 семестр: " + yearlySem2Count);
+            yearlyLabel.setText("3 семестр: " + yearlySem3Count);
+            yearlyLabel.setText("4 семестр: " + yearlySem4Count);
+            yearlyLabel.setText("5 семестр: " + yearlySem5Count);
+            yearlyLabel.setText("6 семестр: " + yearlySem6Count);
+            yearlyLabel.setText("7 семестр: " + yearlySem7Count);
+            yearlyLabel.setText("8 семестр: " + yearlySem8Count);
 
             ref.data = pickedCurricula;
         });
