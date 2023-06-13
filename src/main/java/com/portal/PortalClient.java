@@ -109,15 +109,16 @@ public class PortalClient extends Application {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                dbConnection.login("test_user", "123");
-                loginLabel.setText("Успешно");
 
                 if (migrate) {
                     dbConnection.migrate();
                 }
 
+                dbConnection.login("test_user", "123");
+                loginLabel.setText("Успешно");
+
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1500);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -986,17 +987,17 @@ public class PortalClient extends Application {
             }
 
             yearlyLabel.setText("Итого за год: " + yearlyCount);
-            yearlyLabel.setText("Итого лекций: " + yearlyLecturesCount);
-            yearlyLabel.setText("Итого практик: " + yearlyPracticesCount);
+            yearlyLecturesLabel.setText("Итого лекций: " + yearlyLecturesCount);
+            yearlyPracticesLabel.setText("Итого практик: " + yearlyPracticesCount);
 
-            yearlyLabel.setText("1 семестр: " + yearlySem1Count);
-            yearlyLabel.setText("2 семестр: " + yearlySem2Count);
-            yearlyLabel.setText("3 семестр: " + yearlySem3Count);
-            yearlyLabel.setText("4 семестр: " + yearlySem4Count);
-            yearlyLabel.setText("5 семестр: " + yearlySem5Count);
-            yearlyLabel.setText("6 семестр: " + yearlySem6Count);
-            yearlyLabel.setText("7 семестр: " + yearlySem7Count);
-            yearlyLabel.setText("8 семестр: " + yearlySem8Count);
+            yearlySem1Label.setText("1 семестр: " + yearlySem1Count);
+            yearlySem2Label.setText("2 семестр: " + yearlySem2Count);
+            yearlySem3Label.setText("3 семестр: " + yearlySem3Count);
+            yearlySem4Label.setText("4 семестр: " + yearlySem4Count);
+            yearlySem5Label.setText("5 семестр: " + yearlySem5Count);
+            yearlySem6Label.setText("6 семестр: " + yearlySem6Count);
+            yearlySem7Label.setText("7 семестр: " + yearlySem7Count);
+            yearlySem8Label.setText("8 семестр: " + yearlySem8Count);
 
             ref.data = pickedCurricula;
         });
